@@ -11,7 +11,7 @@ export const DATA_HERO = "data:image/svg+xml;utf8," + encodeURIComponent(`
     </defs>
     <rect width='800' height='300' fill='url(#g)'/>
     <text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle'
-      font-family='Arial, Helvetica, sans-serif' font-size='36' fill='#fff'>
+      font-family='Aptos, sans-serif' font-size='36' fill='#fff'>
       Hero Placeholder
     </text>
   </svg>

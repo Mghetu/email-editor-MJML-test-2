@@ -16,6 +16,79 @@ let lastStoreToastAt = 0;
 const SAVE_BLOCK_BUTTON_ID = 'save-custom-block-btn';
 const DEFAULT_BLOCK_CATEGORY = 'Custom Modules';
 const MODULE_LIBRARY_COMMAND_ID = 'open-module-library';
+const DEFAULT_EMAIL_FONT = 'Aptos, sans-serif';
+
+const setDefaultFontForWrapper = (editor) => {
+  if (!editor || typeof editor.getWrapper !== 'function') {
+    return;
+  }
+
+  const wrapper = editor.getWrapper();
+  if (wrapper && typeof wrapper.addStyle === 'function') {
+    wrapper.addStyle({ 'font-family': DEFAULT_EMAIL_FONT });
+  }
+};
+
+const resetFontPropertyOptions = (editor) => {
+  const styleManager = editor?.StyleManager;
+
+  if (!styleManager || typeof styleManager.getProperty !== 'function') {
+    return;
+  }
+
+  const fontProperty = styleManager.getProperty('typography', 'font-family');
+
+  if (!fontProperty) {
+    return;
+  }
+
+  fontProperty.set('options', []);
+  fontProperty.set('list', []);
+  fontProperty.set('default', DEFAULT_EMAIL_FONT);
+
+  if (typeof fontProperty.setValue === 'function') {
+    fontProperty.setValue(DEFAULT_EMAIL_FONT);
+  } else {
+    fontProperty.set('value', DEFAULT_EMAIL_FONT);
+  }
+};
+
+const enforceDefaultFontFamily = (editor) => {
+  if (!editor) {
+    return;
+  }
+
+  setDefaultFontForWrapper(editor);
+  resetFontPropertyOptions(editor);
+};
+
+const enforceDefaultFontTrait = (component) => {
+  const traits = component?.get?.('traits');
+
+  if (!traits || typeof traits.each !== 'function') {
+    return;
+  }
+
+  traits.each((trait) => {
+    if (!trait || typeof trait.get !== 'function') {
+      return;
+    }
+
+    if (trait.get('name') !== 'font-family') {
+      return;
+    }
+
+    trait.set('options', []);
+    trait.set('list', []);
+    trait.set('default', DEFAULT_EMAIL_FONT);
+
+    if (typeof trait.setValue === 'function') {
+      trait.setValue(DEFAULT_EMAIL_FONT);
+    } else {
+      trait.set('value', DEFAULT_EMAIL_FONT);
+    }
+  });
+};
 
 const getViewsContainer = (editor) => {
   const panelsApi = editor?.Panels;
@@ -466,7 +539,9 @@ export function initEditor() {
     },
     plugins: ['grapesjs-mjml'],
     pluginsOpts: {
-      'grapesjs-mjml': {}
+      'grapesjs-mjml': {
+        fonts: {}
+      }
     }
   });
 
@@ -475,7 +550,15 @@ export function initEditor() {
   setupSaveBlockButton(window.editor);
   setupModuleLibraryControls(window.editor);
 
+  window.editor.on('component:selected', (component) =>
+    enforceDefaultFontTrait(component)
+  );
+  window.editor.on('component:add', (component) =>
+    enforceDefaultFontTrait(component)
+  );
+
   window.editor.on('load', function () {
+    enforceDefaultFontFamily(window.editor);
     registerViewsContainerLayoutSync(window.editor);
     removeLayersAndBlocksFromRightPanel(window.editor);
     ensureModuleLibraryReady(window.editor);
@@ -496,6 +579,8 @@ export function initEditor() {
 
     window.editor.Commands.stop('open-blocks');
   });
+
+  window.editor.on('run:open-sm', () => resetFontPropertyOptions(window.editor));
 }
 
 export default initEditor;
