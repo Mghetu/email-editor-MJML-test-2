@@ -23,6 +23,184 @@ const getDefaultFontOption = () => ({
   name: DEFAULT_EMAIL_FONT_NAME,
 });
 
+const MJ_TEXT_COMPONENT_TYPE = 'mj-text';
+const MJ_TEXT_STYLE_ATTRIBUTE_MAP = {
+  color: 'color',
+  'font-family': 'font-family',
+  'font-size': 'font-size',
+  'font-style': 'font-style',
+  'font-weight': 'font-weight',
+  'line-height': 'line-height',
+  'letter-spacing': 'letter-spacing',
+  'text-align': 'align',
+  'text-decoration': 'text-decoration',
+  'text-transform': 'text-transform',
+  'background-color': 'background-color',
+  'container-background-color': 'container-background-color',
+  padding: 'padding',
+  'padding-top': 'padding-top',
+  'padding-right': 'padding-right',
+  'padding-bottom': 'padding-bottom',
+  'padding-left': 'padding-left',
+};
+
+const isMjTextComponent = (component) =>
+  Boolean(component?.is) && component.is(MJ_TEXT_COMPONENT_TYPE);
+
+const forEachComponentInTree = (component, callback) => {
+  if (!component || typeof callback !== 'function') {
+    return;
+  }
+
+  callback(component);
+
+  if (typeof component.components !== 'function') {
+    return;
+  }
+
+  const children = component.components();
+  if (!children || typeof children.each !== 'function') {
+    return;
+  }
+
+  children.each((child) => forEachComponentInTree(child, callback));
+};
+
+const getManagedMjTextAttrs = (component) => {
+  if (!component) {
+    return null;
+  }
+
+  if (!component.__managedMjTextAttrs) {
+    component.__managedMjTextAttrs = {};
+  }
+
+  return component.__managedMjTextAttrs;
+};
+
+const markManagedMjTextAttr = (component, attrName) => {
+  const managedAttrs = getManagedMjTextAttrs(component);
+  if (managedAttrs) {
+    managedAttrs[attrName] = true;
+  }
+};
+
+const unmarkManagedMjTextAttr = (component, attrName) => {
+  const managedAttrs = component?.__managedMjTextAttrs;
+  if (managedAttrs && Object.prototype.hasOwnProperty.call(managedAttrs, attrName)) {
+    delete managedAttrs[attrName];
+  }
+};
+
+const isManagedMjTextAttr = (component, attrName) =>
+  Boolean(component?.__managedMjTextAttrs?.[attrName]);
+
+const normaliseMjTextStyles = (component, properties, { allowRemoval = false } = {}) => {
+  if (!isMjTextComponent(component) || component.__normalisingMjTextStyles) {
+    return;
+  }
+
+  component.__normalisingMjTextStyles = true;
+
+  try {
+    const style =
+      (typeof component.getStyle === 'function' && component.getStyle()) || {};
+    let attributes =
+      (typeof component.getAttributes === 'function' && component.getAttributes()) || {};
+
+    const propertiesToCheck = (() => {
+      if (Array.isArray(properties) && properties.length) {
+        return Array.from(new Set(properties));
+      }
+
+      return Object.keys(style);
+    })();
+
+    propertiesToCheck.forEach((styleName) => {
+      const attrName = MJ_TEXT_STYLE_ATTRIBUTE_MAP[styleName];
+      if (!attrName) {
+        return;
+      }
+
+      const value = style?.[styleName];
+
+      if (value !== undefined && value !== null && value !== '') {
+        if (typeof component.addAttributes === 'function') {
+          component.addAttributes({ [attrName]: value });
+          attributes =
+            (typeof component.getAttributes === 'function' &&
+              component.getAttributes()) ||
+            { ...attributes, [attrName]: value };
+          attributes[attrName] = value;
+          markManagedMjTextAttr(component, attrName);
+        }
+
+        if (typeof component.removeStyle === 'function' && styleName in style) {
+          component.removeStyle(styleName);
+        }
+
+        return;
+      }
+
+      if (
+        allowRemoval &&
+        isManagedMjTextAttr(component, attrName) &&
+        Object.prototype.hasOwnProperty.call(attributes, attrName)
+      ) {
+        if (typeof component.removeAttributes === 'function') {
+          component.removeAttributes(attrName);
+          attributes =
+            (typeof component.getAttributes === 'function' &&
+              component.getAttributes()) ||
+            attributes;
+        } else if (typeof component.setAttributes === 'function') {
+          const nextAttributes = { ...attributes };
+          delete nextAttributes[attrName];
+          component.setAttributes(nextAttributes);
+          attributes = nextAttributes;
+        }
+
+        delete attributes[attrName];
+        unmarkManagedMjTextAttr(component, attrName);
+      }
+    });
+  } finally {
+    component.__normalisingMjTextStyles = false;
+  }
+};
+
+const attachMjTextStyleNormaliser = (component) => {
+  if (!component) {
+    return;
+  }
+
+  forEachComponentInTree(component, (cmp) => {
+    if (!isMjTextComponent(cmp)) {
+      return;
+    }
+
+    if (!cmp.__mjTextStyleNormaliserAttached && typeof cmp.on === 'function') {
+      cmp.__mjTextStyleNormaliserAttached = true;
+
+      cmp.on('change:style', (model, newStyle = {}) => {
+        const previousStyle =
+          (typeof model.previous === 'function' && model.previous('style')) || {};
+
+        const changedProperties = Array.from(
+          new Set([
+            ...Object.keys(previousStyle || {}),
+            ...Object.keys(newStyle || {}),
+          ])
+        );
+
+        normaliseMjTextStyles(model, changedProperties, { allowRemoval: true });
+      });
+    }
+
+    normaliseMjTextStyles(cmp);
+  });
+};
+
 const setDefaultFontForWrapper = (editor) => {
   if (!editor || typeof editor.getWrapper !== 'function') {
     return;
@@ -582,12 +760,14 @@ export function initEditor() {
   setupSaveBlockButton(window.editor);
   setupModuleLibraryControls(window.editor);
 
-  window.editor.on('component:selected', (component) =>
-    enforceDefaultFontTrait(component)
-  );
-  window.editor.on('component:add', (component) =>
-    enforceDefaultFontTrait(component)
-  );
+  window.editor.on('component:selected', (component) => {
+    enforceDefaultFontTrait(component);
+    attachMjTextStyleNormaliser(component);
+  });
+  window.editor.on('component:add', (component) => {
+    enforceDefaultFontTrait(component);
+    attachMjTextStyleNormaliser(component);
+  });
 
   window.editor.on('load', function () {
     setupModuleLibraryControls(window.editor);
@@ -598,6 +778,7 @@ export function initEditor() {
     hideModuleLibraryPanel(window.editor);
     initModuleManagerUI(window.editor);
     initMarketingTemplatesUI(window.editor);
+    attachMjTextStyleNormaliser(window.editor.getWrapper());
     window.editor.BlockManager.render();
     window.editor.LayerManager.render();
 
