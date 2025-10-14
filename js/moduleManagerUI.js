@@ -55,7 +55,7 @@ function buildThumbnail(module) {
   return thumbnailWrapper;
 }
 
-function insertModuleIntoCanvas(editor, module) {
+export function insertModuleIntoCanvas(editor, module) {
   const selected = editor.getSelected();
 
   if (selected && typeof selected.append === 'function') {

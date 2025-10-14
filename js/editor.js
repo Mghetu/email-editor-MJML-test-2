@@ -2,6 +2,10 @@ import addCustomBlocks from './custom-blocks.js';
 import { loadBlocks, saveBlock } from './modulePersistence.js';
 import { showToast } from './toast.js';
 import { initModuleManagerUI } from './moduleManagerUI.js';
+import {
+  ensureModuleLibraryReady,
+  initMarketingTemplatesUI
+} from './moduleLibraryPanel.js';
 
 const STORAGE_TOAST_ID = 'storage-status-toast';
 const STORE_TOAST_INTERVAL = 15000;
@@ -167,12 +171,6 @@ const getSelectedMarkup = (editor) => {
 
 async function initialiseCustomBlocks(editor) {
   try {
-    addCustomBlocks(editor);
-  } catch (error) {
-    console.error('[CustomBlocks] Failed to register default modules', error);
-  }
-
-  try {
     const savedModules = await loadBlocks();
     if (Array.isArray(savedModules) && savedModules.length) {
       addCustomBlocks(editor, savedModules);
@@ -321,9 +319,12 @@ export function initEditor() {
   configureStorageEvents(window.editor);
   initialiseCustomBlocks(window.editor);
   setupSaveBlockButton(window.editor);
-  initModuleManagerUI(window.editor);
+  ensureModuleLibraryReady(window.editor);
 
   window.editor.on('load', function () {
+    ensureModuleLibraryReady(window.editor);
+    initModuleManagerUI(window.editor);
+    initMarketingTemplatesUI(window.editor);
     window.editor.BlockManager.render();
     window.editor.LayerManager.render();
 
