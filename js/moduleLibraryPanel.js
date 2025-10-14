@@ -4,7 +4,6 @@ import { insertModuleIntoCanvas } from './moduleManagerUI.js';
 const PANEL_ID = 'module-library-panel';
 const MARKETING_LIST_ID = 'marketing-templates-list';
 const MODULE_LIST_WRAPPER_ID = 'module-library-modules';
-const MODULE_LIBRARY_VIEW_FLAG = 'moduleLibraryView';
 
 function buildPanelMarkup() {
   const panel = document.createElement('section');
@@ -59,41 +58,10 @@ export function mountModuleLibraryPanel(editor) {
   let panel = viewsContainer.querySelector(`#${PANEL_ID}`);
   if (!panel) {
     panel = buildPanelMarkup();
-    panel.hidden = true;
-    panel.setAttribute('aria-hidden', 'true');
-    panel.dataset.moduleLibraryInitialised = 'true';
     viewsContainer.prepend(panel);
   }
 
   return panel;
-}
-
-function markOtherViewsHidden(viewsContainer, panel) {
-  const children = Array.from(viewsContainer.children || []);
-
-  children.forEach((child) => {
-    if (!child || child === panel) {
-      return;
-    }
-
-    child.dataset[MODULE_LIBRARY_VIEW_FLAG] = 'hidden';
-    child.style.display = 'none';
-  });
-}
-
-function restoreOtherViews(viewsContainer, panel) {
-  const children = Array.from(viewsContainer.children || []);
-
-  children.forEach((child) => {
-    if (!child || child === panel) {
-      return;
-    }
-
-    if (child.dataset[MODULE_LIBRARY_VIEW_FLAG] === 'hidden') {
-      delete child.dataset[MODULE_LIBRARY_VIEW_FLAG];
-      child.style.removeProperty('display');
-    }
-  });
 }
 
 function createEmptyState() {
@@ -183,44 +151,10 @@ export function ensureModuleLibraryReady(editor) {
     return;
   }
 
-  if (!panel.dataset.moduleLibraryInitialised) {
-    panel.hidden = true;
-    panel.setAttribute('aria-hidden', 'true');
-    panel.dataset.moduleLibraryInitialised = 'true';
-  }
-
   const moduleListWrapper = panel.querySelector(`#${MODULE_LIST_WRAPPER_ID}`);
   if (moduleListWrapper) {
     moduleListWrapper.setAttribute('role', 'region');
     moduleListWrapper.setAttribute('aria-live', 'polite');
   }
-}
-
-export function showModuleLibraryPanel(editor) {
-  const viewsContainer = resolveViewsContainer(editor);
-  const panel = mountModuleLibraryPanel(editor);
-
-  if (!viewsContainer || !panel) {
-    return;
-  }
-
-  panel.hidden = false;
-  panel.removeAttribute('aria-hidden');
-  viewsContainer.dataset.moduleLibraryVisible = 'true';
-  markOtherViewsHidden(viewsContainer, panel);
-}
-
-export function hideModuleLibraryPanel(editor) {
-  const viewsContainer = resolveViewsContainer(editor);
-  const panel = viewsContainer?.querySelector(`#${PANEL_ID}`);
-
-  if (!viewsContainer || !panel) {
-    return;
-  }
-
-  panel.hidden = true;
-  panel.setAttribute('aria-hidden', 'true');
-  delete viewsContainer.dataset.moduleLibraryVisible;
-  restoreOtherViews(viewsContainer, panel);
 }
 

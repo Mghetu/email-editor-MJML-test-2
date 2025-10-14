@@ -11,7 +11,7 @@ export const DATA_HERO = "data:image/svg+xml;utf8," + encodeURIComponent(`
     </defs>
     <rect width='800' height='300' fill='url(#g)'/>
     <text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle'
-      font-family="${Theme.fontFamily}" font-size='36' fill='#fff'>
+      font-family='Arial, Helvetica, sans-serif' font-size='36' fill='#fff'>
       Hero Placeholder
     </text>
   </svg>
@@ -23,11 +23,10 @@ export const SampleTemplates = {
     mjml: `
 <mjml>
   <mj-head>
-    <mj-font name="${Theme.fontName}" href="${Theme.fontHref}" />
     <mj-attributes>
-      <mj-all font-family="${Theme.fontFamily}" line-height="1.5" />
+      <mj-all font-family="${Theme.fontFamily}" />
       <mj-text font-size="14px" color="#222222" />
-      <mj-button background-color="${Theme.brandColor}" color="#ffffff" border-radius="4px" font-weight="600" />
+      <mj-button background-color="${Theme.brandColor}" color="#ffffff" border-radius="4px" />
       <mj-image padding="0" />
     </mj-attributes>
     <mj-style>
@@ -84,11 +83,10 @@ export const SampleTemplates = {
     mjml: `
 <mjml>
   <mj-head>
-    <mj-font name="${Theme.fontName}" href="${Theme.fontHref}" />
     <mj-attributes>
-      <mj-all font-family="${Theme.fontFamily}" line-height="1.5" />
+      <mj-all font-family="${Theme.fontFamily}" />
       <mj-text font-size="14px" color="#222222" />
-      <mj-button background-color="${Theme.brandColor}" color="#ffffff" border-radius="4px" font-weight="600" />
+      <mj-button background-color="${Theme.brandColor}" color="#ffffff" border-radius="4px" />
     </mj-attributes>
   </mj-head>
   <mj-body background-color="#f4f5f7">
