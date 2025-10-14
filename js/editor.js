@@ -2,6 +2,12 @@ import addCustomBlocks from './custom-blocks.js';
 import { loadBlocks, saveBlock } from './modulePersistence.js';
 import { showToast } from './toast.js';
 import { initModuleManagerUI } from './moduleManagerUI.js';
+import {
+  ensureModuleLibraryReady,
+  initMarketingTemplatesUI,
+  showModuleLibraryPanel,
+  hideModuleLibraryPanel
+} from './moduleLibraryPanel.js';
 
 const STORAGE_TOAST_ID = 'storage-status-toast';
 const STORE_TOAST_INTERVAL = 15000;
@@ -9,6 +15,43 @@ let lastStoreToastAt = 0;
 
 const SAVE_BLOCK_BUTTON_ID = 'save-custom-block-btn';
 const DEFAULT_BLOCK_CATEGORY = 'Custom Modules';
+const MODULE_LIBRARY_COMMAND_ID = 'open-module-library';
+
+const getViewsContainer = (editor) => {
+  const panelsApi = editor?.Panels;
+  if (!panelsApi || typeof panelsApi.getPanel !== 'function') {
+    return null;
+  }
+
+  const viewsPanel = panelsApi.getPanel('views-container');
+  if (!viewsPanel) {
+    return null;
+  }
+
+  return viewsPanel.get?.('el') || viewsPanel.view?.el || null;
+};
+
+const removeLayersAndBlocksFromRightPanel = (editor) => {
+  const panelsApi = editor?.Panels;
+
+  if (panelsApi && typeof panelsApi.removeButton === 'function') {
+    ['open-blocks', 'open-layers'].forEach((buttonId) => {
+      panelsApi.removeButton('views', buttonId);
+    });
+  }
+
+  const viewsContainer = getViewsContainer(editor);
+  if (!viewsContainer) {
+    return;
+  }
+
+  ['.gjs-blocks-c', '.gjs-layers-c'].forEach((selector) => {
+    const view = viewsContainer.querySelector(selector);
+    if (view && typeof view.remove === 'function') {
+      view.remove();
+    }
+  });
+};
 
 const slugify = (value = '') =>
   value
@@ -167,18 +210,71 @@ const getSelectedMarkup = (editor) => {
 
 async function initialiseCustomBlocks(editor) {
   try {
-    addCustomBlocks(editor);
-  } catch (error) {
-    console.error('[CustomBlocks] Failed to register default modules', error);
-  }
-
-  try {
     const savedModules = await loadBlocks();
     if (Array.isArray(savedModules) && savedModules.length) {
       addCustomBlocks(editor, savedModules);
     }
   } catch (error) {
     console.error('[CustomBlocks] Failed to restore saved modules', error);
+  }
+}
+
+function setupModuleLibraryControls(editor) {
+  ensureModuleLibraryReady(editor);
+
+  const panelsApi = editor?.Panels;
+  const commandsApi = editor?.Commands;
+
+  if (!panelsApi || !commandsApi) {
+    return;
+  }
+
+  const getModuleLibraryButton = () =>
+    typeof panelsApi.getButton === 'function'
+      ? panelsApi.getButton('views', MODULE_LIBRARY_COMMAND_ID)
+      : null;
+
+  const hasCommand =
+    typeof commandsApi.get === 'function' && commandsApi.get(MODULE_LIBRARY_COMMAND_ID);
+
+  if (!hasCommand) {
+    commandsApi.add(MODULE_LIBRARY_COMMAND_ID, {
+      run(ed) {
+        showModuleLibraryPanel(ed);
+        initMarketingTemplatesUI(ed);
+      },
+      stop(ed) {
+        hideModuleLibraryPanel(ed);
+      },
+    });
+  }
+
+  if (!getModuleLibraryButton()) {
+    panelsApi.addButton('views', {
+      id: MODULE_LIBRARY_COMMAND_ID,
+      className: 'fa fa-th-large',
+      command: MODULE_LIBRARY_COMMAND_ID,
+      attributes: {
+        title: 'Module Library',
+      },
+      togglable: true,
+    });
+  }
+
+  if (!editor.__moduleLibraryListenersAttached) {
+    const deactivateModuleLibrary = () => {
+      hideModuleLibraryPanel(editor);
+      const button = getModuleLibraryButton();
+      if (button && typeof button.set === 'function') {
+        button.set('active', false);
+      }
+    };
+
+    editor.on('run:open-sm', deactivateModuleLibrary);
+    editor.on('run:open-layers', deactivateModuleLibrary);
+    editor.on('run:open-blocks', deactivateModuleLibrary);
+
+    editor.__moduleLibraryListenersAttached = true;
   }
 }
 
@@ -321,9 +417,14 @@ export function initEditor() {
   configureStorageEvents(window.editor);
   initialiseCustomBlocks(window.editor);
   setupSaveBlockButton(window.editor);
-  initModuleManagerUI(window.editor);
+  setupModuleLibraryControls(window.editor);
 
   window.editor.on('load', function () {
+    removeLayersAndBlocksFromRightPanel(window.editor);
+    ensureModuleLibraryReady(window.editor);
+    hideModuleLibraryPanel(window.editor);
+    initModuleManagerUI(window.editor);
+    initMarketingTemplatesUI(window.editor);
     window.editor.BlockManager.render();
     window.editor.LayerManager.render();
 
