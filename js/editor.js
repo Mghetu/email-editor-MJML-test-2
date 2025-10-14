@@ -16,7 +16,12 @@ let lastStoreToastAt = 0;
 const SAVE_BLOCK_BUTTON_ID = 'save-custom-block-btn';
 const DEFAULT_BLOCK_CATEGORY = 'Custom Modules';
 const MODULE_LIBRARY_COMMAND_ID = 'open-module-library';
-const DEFAULT_EMAIL_FONT = 'Aptos, sans-serif';
+const DEFAULT_EMAIL_FONT_NAME = 'Aptos';
+const DEFAULT_EMAIL_FONT = `${DEFAULT_EMAIL_FONT_NAME}, sans-serif`;
+const getDefaultFontOption = () => ({
+  value: DEFAULT_EMAIL_FONT,
+  name: DEFAULT_EMAIL_FONT_NAME,
+});
 
 const setDefaultFontForWrapper = (editor) => {
   if (!editor || typeof editor.getWrapper !== 'function') {
@@ -42,8 +47,10 @@ const resetFontPropertyOptions = (editor) => {
     return;
   }
 
-  fontProperty.set('options', []);
-  fontProperty.set('list', []);
+  const fontOption = getDefaultFontOption();
+
+  fontProperty.set('options', [fontOption]);
+  fontProperty.set('list', [fontOption]);
   fontProperty.set('default', DEFAULT_EMAIL_FONT);
 
   if (typeof fontProperty.setValue === 'function') {
@@ -78,8 +85,10 @@ const enforceDefaultFontTrait = (component) => {
       return;
     }
 
-    trait.set('options', []);
-    trait.set('list', []);
+    const fontOption = getDefaultFontOption();
+
+    trait.set('options', [fontOption]);
+    trait.set('list', [fontOption]);
     trait.set('default', DEFAULT_EMAIL_FONT);
 
     if (typeof trait.setValue === 'function') {
@@ -540,8 +549,10 @@ export function initEditor() {
     plugins: ['grapesjs-mjml'],
     pluginsOpts: {
       'grapesjs-mjml': {
-        fonts: {}
-      }
+        fonts: {
+          [DEFAULT_EMAIL_FONT_NAME]: DEFAULT_EMAIL_FONT,
+        },
+      },
     }
   });
 
