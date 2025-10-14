@@ -19,6 +19,135 @@ const slugify = (value = '') =>
     .replace(/(^-|-$)+/g, '')
     .slice(0, 60) || 'custom-block';
 
+const showSaveBlockToast = (message, { variant = 'info', duration = 3500 } = {}) =>
+  showToast({
+    id: 'save-block-feedback',
+    message,
+    variant,
+    duration,
+    role: variant === 'error' ? 'alert' : 'status',
+  });
+
+const promptForValue = ({ message, defaultValue = '', required = false }) => {
+  const response = window.prompt(message, defaultValue);
+
+  if (response === null) {
+    return { cancelled: true, value: null };
+  }
+
+  const trimmed = response.trim();
+  if (required && !trimmed) {
+    return { cancelled: false, value: null };
+  }
+
+  return { cancelled: false, value: trimmed };
+};
+
+const buildModuleDefinition = async (editor, markup) => {
+  const selected = editor.getSelected();
+  const suggestedLabel =
+    selected?.get('custom-name') ||
+    (typeof selected?.getName === 'function' && selected.getName()) ||
+    'Custom Block';
+
+  const labelPrompt = promptForValue({
+    message: 'Enter a label for this block',
+    defaultValue: suggestedLabel,
+    required: true,
+  });
+
+  if (labelPrompt.cancelled) {
+    return null;
+  }
+
+  if (!labelPrompt.value) {
+    showSaveBlockToast('A label is required to save the block.', {
+      variant: 'error',
+      duration: 4000,
+    });
+    return null;
+  }
+
+  const label = labelPrompt.value;
+  const suggestedId = `custom-${slugify(label)}`;
+  const idPrompt = promptForValue({
+    message: 'Enter a unique identifier for this block',
+    defaultValue: suggestedId,
+    required: true,
+  });
+
+  if (idPrompt.cancelled) {
+    return null;
+  }
+
+  if (!idPrompt.value) {
+    showSaveBlockToast('A unique identifier is required to save the block.', {
+      variant: 'error',
+      duration: 4000,
+    });
+    return null;
+  }
+
+  const id = idPrompt.value;
+  let existingModule = null;
+
+  try {
+    const modules = await loadBlocks();
+    existingModule = modules.find((module) => module.id === id) || null;
+  } catch (error) {
+    console.warn('[CustomBlocks] Unable to verify existing modules before saving', error);
+  }
+
+  if (existingModule) {
+    const confirmed = window.confirm(
+      `A block with the identifier "${id}" already exists. Do you want to overwrite it?`
+    );
+
+    if (!confirmed) {
+      showSaveBlockToast('Block save cancelled.', { duration: 2400 });
+      return null;
+    }
+  }
+
+  const categoryPrompt = promptForValue({
+    message: 'Enter a category for this block (optional)',
+    defaultValue: existingModule?.category || DEFAULT_BLOCK_CATEGORY,
+  });
+
+  if (categoryPrompt?.cancelled) {
+    return null;
+  }
+
+  const thumbnailPrompt = promptForValue({
+    message: 'Enter a thumbnail URL for this block (optional)',
+    defaultValue: existingModule?.thumbnail || '',
+  });
+
+  if (thumbnailPrompt?.cancelled) {
+    return null;
+  }
+
+  const moduleDefinition = {
+    id,
+    label,
+    category: categoryPrompt?.value || DEFAULT_BLOCK_CATEGORY,
+    markup: markup.trim(),
+    metadata: {
+      ...(existingModule?.metadata || {}),
+      savedFrom: 'editor',
+    },
+  };
+
+  if (thumbnailPrompt?.value) {
+    moduleDefinition.thumbnail = thumbnailPrompt.value;
+  }
+
+  return {
+    moduleDefinition,
+    isUpdate: Boolean(existingModule),
+  };
+};
+
 const getSelectedMarkup = (editor) => {
   const selected = editor.getSelected();
   if (!selected) {
@@ -63,11 +192,8 @@ function setupSaveBlockButton(editor) {
     const selected = editor.getSelected();
 
     if (!selected) {
-      showToast({
-        id: 'save-block-feedback',
-        message: 'Select a component in the canvas to save it as a block.',
+      showSaveBlockToast('Select a component in the canvas to save it as a block.', {
         variant: 'error',
-        duration: 3500,
       });
       return;
     }
@@ -75,54 +201,19 @@ function setupSaveBlockButton(editor) {
     const markup = getSelectedMarkup(editor);
 
     if (!markup) {
-      showToast({
-        id: 'save-block-feedback',
-        message: 'Unable to serialise the selected component. Try another element.',
+      showSaveBlockToast('Unable to serialise the selected component. Try another element.', {
         variant: 'error',
         duration: 4000,
       });
       return;
     }
 
-    const suggestedLabel =
-      selected.get('custom-name') ||
-      (typeof selected.getName === 'function' && selected.getName()) ||
-      'Custom Block';
-
-    const label = window.prompt('Enter a label for this block', suggestedLabel);
-    if (!label) {
+    const moduleDetails = await buildModuleDefinition(editor, markup);
+    if (!moduleDetails) {
       return;
     }
 
-    const suggestedId = `custom-${slugify(label)}`;
-    const id = window.prompt('Enter a unique identifier for this block', suggestedId);
-    if (!id) {
-      return;
-    }
-
-    const category = window.prompt(
-      'Enter a category for this block (optional)',
-      DEFAULT_BLOCK_CATEGORY
-    );
-
-    const thumbnail = window.prompt(
-      'Enter a thumbnail URL for this block (optional)',
-      ''
-    );
-
-    const moduleDefinition = {
-      id: id.trim(),
-      label: label.trim(),
-      category: category ? category.trim() : DEFAULT_BLOCK_CATEGORY,
-      markup: markup.trim(),
-      metadata: {
-        savedFrom: 'editor',
-      },
-    };
-
-    if (thumbnail && thumbnail.trim()) {
-      moduleDefinition.thumbnail = thumbnail.trim();
-    }
+    const { moduleDefinition, isUpdate } = moduleDetails;
 
     saveButton.disabled = true;
 
@@ -133,17 +224,16 @@ function setupSaveBlockButton(editor) {
         : null;
       addCustomBlocks(editor, [savedModule || moduleDefinition]);
       editor.BlockManager.render();
-      showToast({
-        id: 'save-block-feedback',
-        message: 'Block saved to your library.',
-        variant: 'success',
-        duration: 2500,
-      });
+      showSaveBlockToast(
+        isUpdate ? 'Block updated in your library.' : 'Block saved to your library.',
+        {
+          variant: 'success',
+          duration: 2500,
+        }
+      );
     } catch (error) {
       console.error('[CustomBlocks] Failed to save module', error);
-      showToast({
-        id: 'save-block-feedback',
-        message: 'Unable to save block. Check the console for details.',
+      showSaveBlockToast('Unable to save block. Check the console for details.', {
         variant: 'error',
         duration: 4500,
       });
