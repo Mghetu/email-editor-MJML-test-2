@@ -2,8 +2,9 @@
 export const Theme = {
   brandColor: '#086bd4',
   fontName: 'Inter',
-  fontHref: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap',
-  fontFamily: "Inter, Arial, sans-serif",
+  fontHref: 'https://rsms.me/inter/inter.css',
+  fontFamily:
+    "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   spacing: '16px',
   logoUrl: 'assets/default-logo.svg'
 };
