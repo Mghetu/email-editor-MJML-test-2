@@ -17,6 +17,42 @@ const SAVE_BLOCK_BUTTON_ID = 'save-custom-block-btn';
 const DEFAULT_BLOCK_CATEGORY = 'Custom Modules';
 const MODULE_LIBRARY_COMMAND_ID = 'open-module-library';
 
+const getViewsContainer = (editor) => {
+  const panelsApi = editor?.Panels;
+  if (!panelsApi || typeof panelsApi.getPanel !== 'function') {
+    return null;
+  }
+
+  const viewsPanel = panelsApi.getPanel('views-container');
+  if (!viewsPanel) {
+    return null;
+  }
+
+  return viewsPanel.get?.('el') || viewsPanel.view?.el || null;
+};
+
+const removeLayersAndBlocksFromRightPanel = (editor) => {
+  const panelsApi = editor?.Panels;
+
+  if (panelsApi && typeof panelsApi.removeButton === 'function') {
+    ['open-blocks', 'open-layers'].forEach((buttonId) => {
+      panelsApi.removeButton('views', buttonId);
+    });
+  }
+
+  const viewsContainer = getViewsContainer(editor);
+  if (!viewsContainer) {
+    return;
+  }
+
+  ['.gjs-blocks-c', '.gjs-layers-c'].forEach((selector) => {
+    const view = viewsContainer.querySelector(selector);
+    if (view && typeof view.remove === 'function') {
+      view.remove();
+    }
+  });
+};
+
 const slugify = (value = '') =>
   value
     .toString()
@@ -384,6 +420,7 @@ export function initEditor() {
   setupModuleLibraryControls(window.editor);
 
   window.editor.on('load', function () {
+    removeLayersAndBlocksFromRightPanel(window.editor);
     ensureModuleLibraryReady(window.editor);
     hideModuleLibraryPanel(window.editor);
     initModuleManagerUI(window.editor);
