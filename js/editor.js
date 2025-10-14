@@ -31,6 +31,62 @@ const getViewsContainer = (editor) => {
   return viewsPanel.get?.('el') || viewsPanel.view?.el || null;
 };
 
+const getPanelElement = (editor, panelId) => {
+  const panelsApi = editor?.Panels;
+  if (!panelsApi || typeof panelsApi.getPanel !== 'function') {
+    return null;
+  }
+
+  const panel = panelsApi.getPanel(panelId);
+  if (!panel) {
+    return null;
+  }
+
+  return panel.get?.('el') || panel.view?.el || null;
+};
+
+const syncViewsContainerLayout = (editor) => {
+  const viewsContainer = getViewsContainer(editor);
+  if (!viewsContainer) {
+    return;
+  }
+
+  const viewsNav =
+    getPanelElement(editor, 'views') ||
+    document.querySelector('.gjs-pn-panel.gjs-pn-views');
+
+  const navHeight = viewsNav?.offsetHeight || 0;
+
+  if (navHeight) {
+    viewsContainer.style.setProperty(
+      '--views-panel-header-offset',
+      `${navHeight}px`
+    );
+  } else {
+    viewsContainer.style.removeProperty('--views-panel-header-offset');
+  }
+};
+
+const registerViewsContainerLayoutSync = (editor) => {
+  if (!editor) {
+    return;
+  }
+
+  const sync = () => syncViewsContainerLayout(editor);
+  sync();
+
+  const viewsNav = getPanelElement(editor, 'views');
+
+  if (typeof ResizeObserver === 'function' && viewsNav) {
+    const resizeObserver = new ResizeObserver(() => sync());
+    resizeObserver.observe(viewsNav);
+    editor.once('destroy', () => resizeObserver.disconnect());
+  } else {
+    window.addEventListener('resize', sync);
+    editor.once('destroy', () => window.removeEventListener('resize', sync));
+  }
+};
+
 const removeLayersAndBlocksFromRightPanel = (editor) => {
   const panelsApi = editor?.Panels;
 
@@ -420,6 +476,7 @@ export function initEditor() {
   setupModuleLibraryControls(window.editor);
 
   window.editor.on('load', function () {
+    registerViewsContainerLayoutSync(window.editor);
     removeLayersAndBlocksFromRightPanel(window.editor);
     ensureModuleLibraryReady(window.editor);
     hideModuleLibraryPanel(window.editor);

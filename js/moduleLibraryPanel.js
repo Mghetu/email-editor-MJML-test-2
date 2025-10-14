@@ -206,6 +206,7 @@ export function showModuleLibraryPanel(editor) {
 
   panel.hidden = false;
   panel.removeAttribute('aria-hidden');
+  viewsContainer.dataset.moduleLibraryVisible = 'true';
   markOtherViewsHidden(viewsContainer, panel);
 }
 
@@ -219,6 +220,7 @@ export function hideModuleLibraryPanel(editor) {
 
   panel.hidden = true;
   panel.setAttribute('aria-hidden', 'true');
+  delete viewsContainer.dataset.moduleLibraryVisible;
   restoreOtherViews(viewsContainer, panel);
 }
 
