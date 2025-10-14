@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>GrapesJS MJML Plugin</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/grapesjs/dist/css/grapes.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://grapesjs.com/assets/styles/grapesjs/grapesjs-preset-mjml.css"
+    />
+    <link rel="stylesheet" href="css/app.css" />
+    <script src="https://unpkg.com/grapesjs"></script>
+    <script src="https://unpkg.com/grapesjs-mjml"></script>
+    <script src="https://unpkg.com/mjml-browser@4.15.3/lib/index.js"></script>
+  </head>
+  <body>
+    <div class="custom-editor-with-sidebar">
+      <nav class="custom-left-sidebar" aria-label="Editor navigation">
+        <section
+          class="custom-left-sidebar__section custom-left-sidebar__section--blocks"
+          aria-labelledby="custom-left-sidebar-blocks"
+        >
+          <div class="custom-left-sidebar__header-row">
+            <h2
+              id="custom-left-sidebar-blocks"
+              class="custom-left-sidebar__header"
+            >
+              Open Blocks
+            </h2>
+            <button
+              id="save-custom-block-btn"
+              class="custom-left-sidebar__action-btn"
+              type="button"
+            >
+              Save Block
+            </button>
+          </div>
+          <div
+            id="custom-blocks-container"
+            class="custom-left-sidebar__content"
+          ></div>
+        </section>
+        <section
+          class="custom-left-sidebar__section custom-left-sidebar__section--modules"
+          aria-labelledby="custom-left-sidebar-modules"
+        >
+          <h2
+            id="custom-left-sidebar-modules"
+            class="custom-left-sidebar__header"
+          >
+            My Modules
+          </h2>
+          <div class="custom-left-sidebar__content">
+            <div id="user-modules-list" class="module-list" aria-live="polite"></div>
+          </div>
+        </section>
+        <section
+          class="custom-left-sidebar__section custom-left-sidebar__section--layers"
+          aria-labelledby="custom-left-sidebar-layers"
+        >
+          <h2
+            id="custom-left-sidebar-layers"
+            class="custom-left-sidebar__header"
+          >
+            Open Layer Manager
+          </h2>
+          <div
+            id="custom-layers-container"
+            class="custom-left-sidebar__content"
+          ></div>
+        </section>
+      </nav>
+      <div class="custom-editor-main">
+        <div id="gjs" style="height:0px; overflow:hidden">
+      <mjml>
+        <mj-head>
+          <mj-font
+            name="Barlow"
+            href="https://fonts.googleapis.com/css?family=Barlow"
+          ></mj-font>
+
+          <mj-style>
+            .slogan {
+              background: #000;
+            }
+          </mj-style>
+        </mj-head>
+        <mj-body>
+          <!-- Company Header -->
+          <mj-section background-color="#f0f0f0">
+            <mj-column border="10px solid #F45E43">
+              <mj-text font-family="Barlow">A first line of text</mj-text>
+              <mj-spacer height="50px" />
+            </mj-column>
+          </mj-section>
+
+          <!-- Image Header -->
+          <mj-section
+            background-url="http://1.bp.blogspot.com/-TPrfhxbYpDY/Uh3Refzk02I/AAAAAAAALw8/5sUJ0UUGYuw/s1600/New+York+in+The+1960's+-+70's+(2).jpg"
+            background-size="cover"
+            background-repeat="no-repeat"
+          >
+            <mj-column>
+              <mj-text
+                css-class="slogan"
+                align="center"
+                color="#fff"
+                font-size="40px"
+                font-family="Helvetica Neue"
+                >Slogan here</mj-text
+              >
+              <mj-button background-color="#F63A4D" href="#">
+                Promotion
+              </mj-button>
+            </mj-column>
+          </mj-section>
+
+          <!-- Intro text -->
+          <mj-wrapper background-color="#ffe9f7" padding="10px">
+            <mj-section background-color="#eaeffa">
+              <mj-group background-color="#fffadd">
+                <mj-column>
+                  <mj-text
+                    font-style="italic"
+                    font-size="20px"
+                    font-family="Helvetica Neue"
+                    color="#626262"
+                    >My Awesome Text</mj-text
+                  >
+                  <mj-text color="#525252">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                    Proin rutrum enim eget magna efficitur, eu semper augue
+                    semper. Aliquam erat volutpat. Cras id dui lectus.
+                    Vestibulum sed finibus lectus, sit amet suscipit nibh.
+                    Proin nec commodo purus. Sed eget nulla elit. Nulla aliquet
+                    mollis faucibus.
+                  </mj-text>
+                  <mj-button background-color="#F45E43" href="#"
+                    >Learn more</mj-button
+                  >
+                </mj-column>
+              </mj-group>
+            </mj-section>
+          </mj-wrapper>
+
+          <!-- Side image -->
+          <mj-section background-color="white">
+            <mj-column>
+              <mj-image
+                width="200px"
+                src="https://designspell.files.wordpress.com/2012/01/sciolino-paris-bw.jpg"
+              />
+            </mj-column>
+            <mj-column>
+              <mj-text
+                font-style="italic"
+                font-size="20px"
+                font-family="Helvetica Neue"
+                color="#626262"
+              >
+                Find amazing places ...
+              </mj-text>
+              <mj-text color="#525252">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin
+                rutrum enim eget magna efficitur, eu semper augue semper.
+                Aliquam erat volutpat. Cras id dui lectus. Vestibulum sed
+                finibus lectus.
+              </mj-text>
+            </mj-column>
+          </mj-section>
+          <mj-section>
+            <mj-column>
+              <mj-text
+                font-style="italic"
+                font-size="20px"
+                font-family="Helvetica Neue"
+                color="#626262"
+                align="center"
+              >
+                ... with real-life images
+              </mj-text>
+            </mj-column>
+          </mj-section>
+          <mj-raw>
+            <div class="container">
+              <img
+                class="item"
+                src="https://source.unsplash.com/random/200x141?random"
+                alt="Example image"
+              />
+              <img
+                class="item"
+                src="https://source.unsplash.com/random/200x142?random"
+                alt="Example image"
+              />
+              <img
+                class="item"
+                src="https://source.unsplash.com/random/200x143?random"
+                alt="Example image"
+              />
+              <img
+                class="item"
+                src="https://source.unsplash.com/random/200x144?random"
+                alt="Example image"
+              />
+              <img
+                class="item"
+                src="https://source.unsplash.com/random/200x145?random"
+                alt="Example image"
+              />
+              <img
+                class="item"
+                src="https://source.unsplash.com/random/200x146?random"
+                alt="Example image"
+              />
+            </div>
+          </mj-raw>
+          <!-- Icons -->
+          <mj-section background-color="#fbfbfb">
+            <mj-column>
+              <mj-image width="100px" src="http://191n.mj.am/img/191n/3s/x0l.png" />
+            </mj-column>
+            <mj-column>
+              <mj-image width="100px" src="http://191n.mj.am/img/191n/3s/x01.png" />
+            </mj-column>
+            <mj-column>
+              <mj-image width="100px" src="http://191n.mj.am/img/191n/3s/x0s.png" />
+            </mj-column>
+          </mj-section>
+
+          <!-- Footer -->
+          <mj-section background-color="#e7e7e7">
+            <mj-column>
+              <mj-button href="#">Hello There!</mj-button>
+              <mj-social font-size="15px" icon-size="30px" mode="horizontal">
+                <mj-social-element name="facebook" href="https://mjml.io/">
+                  Facebook
+                </mj-social-element>
+                <mj-social-element name="google" href="https://mjml.io/">
+                  Google
+                </mj-social-element>
+                <mj-social-element name="twitter" href="https://mjml.io/">
+                  Twitter
+                </mj-social-element>
+              </mj-social>
+            </mj-column>
+          </mj-section>
+          <!-- Footer -->
+        </mj-body>
+      </mjml>
+        </div>
+      </div>
+    </div>
+
+    <dialog id="module-edit-dialog" class="module-edit-dialog" aria-labelledby="module-edit-title">
+      <form id="module-edit-form" class="module-edit-dialog__form">
+        <h3 id="module-edit-title" class="module-edit-dialog__title">Edit Module</h3>
+        <div class="module-edit-dialog__field">
+          <label class="module-edit-dialog__label" for="module-edit-name">Name</label>
+          <input
+            id="module-edit-name"
+            name="module-edit-name"
+            class="module-edit-dialog__input"
+            type="text"
+            required
+            maxlength="120"
+          />
+        </div>
+        <div class="module-edit-dialog__field">
+          <label class="module-edit-dialog__label" for="module-edit-category">Category</label>
+          <input
+            id="module-edit-category"
+            name="module-edit-category"
+            class="module-edit-dialog__input"
+            type="text"
+            placeholder="Custom Modules"
+          />
+        </div>
+        <div class="module-edit-dialog__field">
+          <label class="module-edit-dialog__label" for="module-edit-markup">Markup</label>
+          <textarea
+            id="module-edit-markup"
+            name="module-edit-markup"
+            class="module-edit-dialog__textarea"
+            required
+          ></textarea>
+        </div>
+        <div class="module-edit-dialog__actions">
+          <button type="button" data-action="cancel" class="module-edit-dialog__button">
+            Cancel
+          </button>
+          <button type="submit" class="module-edit-dialog__button module-edit-dialog__button--primary">
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog
+      id="module-versions-dialog"
+      class="module-versions-dialog"
+      aria-labelledby="module-versions-title"
+    >
+      <div class="module-versions-dialog__content">
+        <header class="module-versions-dialog__header">
+          <h3 id="module-versions-title" class="module-versions-dialog__title">
+            Module Versions
+          </h3>
+          <p
+            id="module-versions-description"
+            class="module-versions-dialog__description"
+          ></p>
+        </header>
+        <div
+          id="module-versions-body"
+          class="module-versions-dialog__body"
+          role="list"
+        ></div>
+        <footer class="module-versions-dialog__footer">
+          <button
+            type="button"
+            data-action="close"
+            class="module-versions-dialog__button module-versions-dialog__button--primary"
+          >
+            Close
+          </button>
+        </footer>
+      </div>
+    </dialog>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>
