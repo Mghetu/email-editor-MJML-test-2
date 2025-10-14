@@ -17,6 +17,7 @@ const SAVE_BLOCK_BUTTON_ID = 'save-custom-block-btn';
 const DEFAULT_BLOCK_CATEGORY = 'Custom Modules';
 const MODULE_LIBRARY_COMMAND_ID = 'open-module-library';
 const DEFAULT_EMAIL_FONT_NAME = 'Inter';
+const DEFAULT_EMAIL_FONT_HREF = 'https://rsms.me/inter/inter.css';
 const DEFAULT_EMAIL_FONT = `${DEFAULT_EMAIL_FONT_NAME}, Arial, sans-serif`;
 const getDefaultFontOption = () => ({
   value: DEFAULT_EMAIL_FONT,
@@ -212,7 +213,54 @@ const setDefaultFontForWrapper = (editor) => {
   }
 };
 
-const resetFontPropertyOptions = (editor) => {
+const normalizeFontOptionValue = (value) =>
+  value ? value.toString().trim().toLowerCase() : '';
+
+const optionMatchesFont = (option, fontOption) => {
+  if (!option) {
+    return false;
+  }
+
+  const targetValues = [fontOption.value, fontOption.name]
+    .filter(Boolean)
+    .map(normalizeFontOptionValue);
+
+  if (!targetValues.length) {
+    return false;
+  }
+
+  if (typeof option === 'string') {
+    return targetValues.includes(normalizeFontOptionValue(option));
+  }
+
+  const value = option.value ?? option.id ?? option.name ?? '';
+  const name = option.name ?? option.label ?? '';
+
+  return (
+    targetValues.includes(normalizeFontOptionValue(value)) ||
+    targetValues.includes(normalizeFontOptionValue(name))
+  );
+};
+
+const ensureFontOptionsIncludeDefault = (options, fontOption) => {
+  if (!Array.isArray(options) || !options.length) {
+    return [fontOption];
+  }
+
+  if (options.some((option) => optionMatchesFont(option, fontOption))) {
+    return options;
+  }
+
+  const areStrings = options.every((option) => typeof option === 'string');
+
+  if (areStrings) {
+    return [...options, fontOption.value || fontOption.name];
+  }
+
+  return [...options, fontOption];
+};
+
+const ensureFontPropertyHasDefault = (editor) => {
   const styleManager = editor?.StyleManager;
 
   if (!styleManager || typeof styleManager.getProperty !== 'function') {
@@ -221,58 +269,104 @@ const resetFontPropertyOptions = (editor) => {
 
   const fontProperty = styleManager.getProperty('typography', 'font-family');
 
-  if (!fontProperty) {
+  if (!fontProperty || typeof fontProperty.set !== 'function') {
     return;
   }
 
   const fontOption = getDefaultFontOption();
+  const currentOptions =
+    fontProperty.get?.('options') || fontProperty.get?.('list') || [];
+  const nextOptions = ensureFontOptionsIncludeDefault(currentOptions, fontOption);
 
-  fontProperty.set('options', [fontOption]);
-  fontProperty.set('list', [fontOption]);
-  fontProperty.set('default', DEFAULT_EMAIL_FONT);
+  fontProperty.set('options', nextOptions);
+  fontProperty.set('list', nextOptions);
+  fontProperty.set('default', fontOption.value);
 
-  if (typeof fontProperty.setValue === 'function') {
-    fontProperty.setValue(DEFAULT_EMAIL_FONT);
-  } else {
-    fontProperty.set('value', DEFAULT_EMAIL_FONT);
-  }
-};
+  const currentValue =
+    (typeof fontProperty.getValue === 'function' &&
+      fontProperty.getValue()) ||
+    fontProperty.get?.('value');
 
-const enforceDefaultFontFamily = (editor) => {
-  if (!editor) {
-    return;
-  }
-
-  setDefaultFontForWrapper(editor);
-  resetFontPropertyOptions(editor);
-};
-
-const enforceDefaultFontTrait = (component) => {
-  const traits = component?.get?.('traits');
-
-  if (!traits || typeof traits.each !== 'function') {
-    return;
-  }
-
-  traits.each((trait) => {
-    if (!trait || typeof trait.get !== 'function') {
-      return;
-    }
-
-    if (trait.get('name') !== 'font-family') {
-      return;
-    }
-
-    const fontOption = getDefaultFontOption();
-
-    trait.set('options', [fontOption]);
-    trait.set('list', [fontOption]);
-    trait.set('default', DEFAULT_EMAIL_FONT);
-
-    if (typeof trait.setValue === 'function') {
-      trait.setValue(DEFAULT_EMAIL_FONT);
+  if (!currentValue) {
+    if (typeof fontProperty.setValue === 'function') {
+      fontProperty.setValue(fontOption.value);
     } else {
-      trait.set('value', DEFAULT_EMAIL_FONT);
+      fontProperty.set('value', fontOption.value);
+    }
+  }
+};
+
+const ensureDefaultFontTrait = (component) => {
+  if (!component) {
+    return;
+  }
+
+  forEachComponentInTree(component, (cmp) => {
+    const traits = cmp?.get?.('traits');
+
+    if (!traits || typeof traits.each !== 'function') {
+      return;
+    }
+
+    traits.each((trait) => {
+      if (!trait || typeof trait.get !== 'function') {
+        return;
+      }
+
+      if (trait.get('name') !== 'font-family') {
+        return;
+      }
+
+      const fontOption = getDefaultFontOption();
+      const currentOptions =
+        trait.get?.('options') || trait.get?.('list') || [];
+      const nextOptions = ensureFontOptionsIncludeDefault(
+        currentOptions,
+        fontOption
+      );
+
+      if (typeof trait.set === 'function') {
+        trait.set('options', nextOptions);
+        trait.set('list', nextOptions);
+        trait.set('default', fontOption.value);
+      }
+
+      const currentValue = trait.get?.('value');
+
+      if (!currentValue) {
+        if (typeof trait.setValue === 'function') {
+          trait.setValue(fontOption.value);
+        } else if (typeof trait.set === 'function') {
+          trait.set('value', fontOption.value);
+        }
+      }
+    });
+  });
+};
+
+const applyDefaultFontToMjText = (component) => {
+  if (!component) {
+    return;
+  }
+
+  forEachComponentInTree(component, (cmp) => {
+    if (!isMjTextComponent(cmp)) {
+      return;
+    }
+
+    const attributes =
+      (typeof cmp.getAttributes === 'function' && cmp.getAttributes()) || {};
+    const style = (typeof cmp.getStyle === 'function' && cmp.getStyle()) || {};
+
+    const hasFontAttribute = Boolean(
+      attributes &&
+        Object.prototype.hasOwnProperty.call(attributes, 'font-family') &&
+        attributes['font-family']
+    );
+    const hasFontStyle = Boolean(style && style['font-family']);
+
+    if (!hasFontAttribute && !hasFontStyle && typeof cmp.addAttributes === 'function') {
+      cmp.addAttributes({ 'font-family': DEFAULT_EMAIL_FONT });
     }
   });
 };
@@ -749,7 +843,7 @@ export function initEditor() {
     pluginsOpts: {
       'grapesjs-mjml': {
         fonts: {
-          [DEFAULT_EMAIL_FONT_NAME]: DEFAULT_EMAIL_FONT,
+          [DEFAULT_EMAIL_FONT_NAME]: DEFAULT_EMAIL_FONT_HREF,
         },
       },
     }
@@ -759,19 +853,26 @@ export function initEditor() {
   initialiseCustomBlocks(window.editor);
   setupSaveBlockButton(window.editor);
   setupModuleLibraryControls(window.editor);
+  ensureFontPropertyHasDefault(window.editor);
 
   window.editor.on('component:selected', (component) => {
-    enforceDefaultFontTrait(component);
+    ensureDefaultFontTrait(component);
+    applyDefaultFontToMjText(component);
     attachMjTextStyleNormaliser(component);
   });
   window.editor.on('component:add', (component) => {
-    enforceDefaultFontTrait(component);
+    ensureDefaultFontTrait(component);
+    applyDefaultFontToMjText(component);
     attachMjTextStyleNormaliser(component);
   });
 
   window.editor.on('load', function () {
     setupModuleLibraryControls(window.editor);
-    enforceDefaultFontFamily(window.editor);
+    setDefaultFontForWrapper(window.editor);
+    ensureFontPropertyHasDefault(window.editor);
+    const wrapper = window.editor.getWrapper();
+    ensureDefaultFontTrait(wrapper);
+    applyDefaultFontToMjText(wrapper);
     registerViewsContainerLayoutSync(window.editor);
     removeLayersAndBlocksFromRightPanel(window.editor);
     ensureModuleLibraryReady(window.editor);
@@ -794,7 +895,7 @@ export function initEditor() {
     window.editor.Commands.stop('open-blocks');
   });
 
-  window.editor.on('run:open-sm', () => resetFontPropertyOptions(window.editor));
+  window.editor.on('run:open-sm', () => ensureFontPropertyHasDefault(window.editor));
 }
 
 export default initEditor;
