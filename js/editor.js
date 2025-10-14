@@ -16,7 +16,7 @@ let lastStoreToastAt = 0;
 const SAVE_BLOCK_BUTTON_ID = 'save-custom-block-btn';
 const DEFAULT_BLOCK_CATEGORY = 'Custom Modules';
 const MODULE_LIBRARY_COMMAND_ID = 'open-module-library';
-const DEFAULT_EMAIL_FONT_NAME = 'Aptos';
+const DEFAULT_EMAIL_FONT_NAME = 'Inter';
 const DEFAULT_EMAIL_FONT = `${DEFAULT_EMAIL_FONT_NAME}, Arial, sans-serif`;
 const getDefaultFontOption = () => ({
   value: DEFAULT_EMAIL_FONT,

@@ -63,176 +63,108 @@
         <div id="gjs" style="height:0px; overflow:hidden">
       <mjml>
         <mj-head>
+          <mj-font name="Inter" href="https://rsms.me/inter/inter.css" />
           <mj-attributes>
-            <mj-text font-family="Aptos, Arial, sans-serif" />
+            <mj-all
+              font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+              line-height="1.5"
+            />
+            <mj-text color="#111827" font-size="16px" />
+            <mj-button
+              background-color="#4338ca"
+              border-radius="6px"
+              color="#ffffff"
+              font-weight="600"
+              padding="14px 24px"
+            />
+            <mj-section padding="0" />
+            <mj-column padding="0" />
+            <mj-wrapper padding="0" />
           </mj-attributes>
-          <mj-style>
-            .slogan {
-              background: #000;
+          <mj-style inline="inline">
+            .card-wrapper {
+              border-radius: 16px;
+              overflow: hidden;
+            }
+            .card-section {
+              padding: 0 40px 32px;
+            }
+            .card-section--header {
+              padding: 32px 40px 24px;
+            }
+            .card-section--footer {
+              padding-bottom: 40px;
+            }
+            .card-footer a {
+              color: #4338ca;
+              text-decoration: underline;
             }
           </mj-style>
         </mj-head>
-        <mj-body>
-          <!-- Company Header -->
-          <mj-section background-color="#f0f0f0">
-            <mj-column border="10px solid #F45E43">
-              <mj-text font-family="Aptos, Arial, sans-serif">A first line of text</mj-text>
-              <mj-spacer height="50px" />
-            </mj-column>
-          </mj-section>
+        <mj-body background-color="#f3f4f6">
+          <mj-section padding="48px 0">
+            <mj-column>
+              <mj-wrapper background-color="#ffffff" css-class="card-wrapper">
+                <mj-section css-class="card-section card-section--header">
+                  <mj-column>
+                    <mj-image
+                      src="assets/default-logo.svg"
+                      alt="Company logo"
+                      width="140px"
+                      align="left"
+                    />
+                  </mj-column>
+                </mj-section>
 
-          <!-- Image Header -->
-          <mj-section
-            background-url="http://1.bp.blogspot.com/-TPrfhxbYpDY/Uh3Refzk02I/AAAAAAAALw8/5sUJ0UUGYuw/s1600/New+York+in+The+1960's+-+70's+(2).jpg"
-            background-size="cover"
-            background-repeat="no-repeat"
-          >
-            <mj-column>
-              <mj-text
-                css-class="slogan"
-                align="center"
-                color="#fff"
-                font-size="40px"
-                font-family="Aptos, Arial, sans-serif"
-                >Slogan here</mj-text
-              >
-              <mj-button background-color="#F63A4D" href="#">
-                Promotion
-              </mj-button>
-            </mj-column>
-          </mj-section>
+                <mj-section css-class="card-section">
+                  <mj-column>
+                    <mj-text font-size="28px" font-weight="600" padding-bottom="16px">
+                      Welcome to your MJML builder
+                    </mj-text>
+                    <mj-text padding-bottom="20px">
+                      Use the blocks on the left to drag and drop sections,
+                      tailor content, and save reusable modules for upcoming
+                      campaigns.
+                    </mj-text>
+                    <mj-button href="#">Explore components</mj-button>
+                  </mj-column>
+                </mj-section>
 
-          <!-- Intro text -->
-          <mj-wrapper background-color="#ffe9f7" padding="10px">
-            <mj-section background-color="#eaeffa">
-              <mj-group background-color="#fffadd">
-                <mj-column>
-                  <mj-text
-                    font-style="italic"
-                    font-size="20px"
-                    font-family="Aptos, Arial, sans-serif"
-                    color="#626262"
-                    >My Awesome Text</mj-text
-                  >
-                  <mj-text color="#525252">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    Proin rutrum enim eget magna efficitur, eu semper augue
-                    semper. Aliquam erat volutpat. Cras id dui lectus.
-                    Vestibulum sed finibus lectus, sit amet suscipit nibh.
-                    Proin nec commodo purus. Sed eget nulla elit. Nulla aliquet
-                    mollis faucibus.
-                  </mj-text>
-                  <mj-button background-color="#F45E43" href="#"
-                    >Learn more</mj-button
-                  >
-                </mj-column>
-              </mj-group>
-            </mj-section>
-          </mj-wrapper>
+                <mj-section css-class="card-section">
+                  <mj-group>
+                    <mj-column>
+                      <mj-text font-size="18px" font-weight="600" padding-bottom="8px">
+                        Build modular content
+                      </mj-text>
+                      <mj-text color="#4b5563">
+                        Save sections you love as modules so you can reuse them
+                        in future newsletters with a single click.
+                      </mj-text>
+                    </mj-column>
+                    <mj-column>
+                      <mj-text font-size="18px" font-weight="600" padding-bottom="8px">
+                        Start from templates
+                      </mj-text>
+                      <mj-text color="#4b5563">
+                        Browse curated marketing layouts to jump-start your
+                        next announcement or product update.
+                      </mj-text>
+                    </mj-column>
+                  </mj-group>
+                </mj-section>
 
-          <!-- Side image -->
-          <mj-section background-color="white">
-            <mj-column>
-              <mj-image
-                width="200px"
-                src="https://designspell.files.wordpress.com/2012/01/sciolino-paris-bw.jpg"
-              />
-            </mj-column>
-            <mj-column>
-              <mj-text
-                font-style="italic"
-                font-size="20px"
-                font-family="Aptos, Arial, sans-serif"
-                color="#626262"
-              >
-                Find amazing places ...
-              </mj-text>
-              <mj-text color="#525252">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin
-                rutrum enim eget magna efficitur, eu semper augue semper.
-                Aliquam erat volutpat. Cras id dui lectus. Vestibulum sed
-                finibus lectus.
-              </mj-text>
+                <mj-section css-class="card-section card-section--footer">
+                  <mj-column>
+                    <mj-divider border-color="#e5e7eb" border-width="1px" padding-bottom="16px" />
+                    <mj-text font-size="12px" color="#6b7280" css-class="card-footer">
+                      Update your footer, social links, and sender information
+                      to match your brand before sending.
+                    </mj-text>
+                  </mj-column>
+                </mj-section>
+              </mj-wrapper>
             </mj-column>
           </mj-section>
-          <mj-section>
-            <mj-column>
-              <mj-text
-                font-style="italic"
-                font-size="20px"
-                font-family="Aptos, Arial, sans-serif"
-                color="#626262"
-                align="center"
-              >
-                ... with real-life images
-              </mj-text>
-            </mj-column>
-          </mj-section>
-          <mj-raw>
-            <div class="container">
-              <img
-                class="item"
-                src="https://source.unsplash.com/random/200x141?random"
-                alt="Example image"
-              />
-              <img
-                class="item"
-                src="https://source.unsplash.com/random/200x142?random"
-                alt="Example image"
-              />
-              <img
-                class="item"
-                src="https://source.unsplash.com/random/200x143?random"
-                alt="Example image"
-              />
-              <img
-                class="item"
-                src="https://source.unsplash.com/random/200x144?random"
-                alt="Example image"
-              />
-              <img
-                class="item"
-                src="https://source.unsplash.com/random/200x145?random"
-                alt="Example image"
-              />
-              <img
-                class="item"
-                src="https://source.unsplash.com/random/200x146?random"
-                alt="Example image"
-              />
-            </div>
-          </mj-raw>
-          <!-- Icons -->
-          <mj-section background-color="#fbfbfb">
-            <mj-column>
-              <mj-image width="100px" src="http://191n.mj.am/img/191n/3s/x0l.png" />
-            </mj-column>
-            <mj-column>
-              <mj-image width="100px" src="http://191n.mj.am/img/191n/3s/x01.png" />
-            </mj-column>
-            <mj-column>
-              <mj-image width="100px" src="http://191n.mj.am/img/191n/3s/x0s.png" />
-            </mj-column>
-          </mj-section>
-
-          <!-- Footer -->
-          <mj-section background-color="#e7e7e7">
-            <mj-column>
-              <mj-button href="#">Hello There!</mj-button>
-              <mj-social font-size="15px" icon-size="30px" mode="horizontal">
-                <mj-social-element name="facebook" href="https://mjml.io/">
-                  Facebook
-                </mj-social-element>
-                <mj-social-element name="google" href="https://mjml.io/">
-                  Google
-                </mj-social-element>
-                <mj-social-element name="twitter" href="https://mjml.io/">
-                  Twitter
-                </mj-social-element>
-              </mj-social>
-            </mj-column>
-          </mj-section>
-          <!-- Footer -->
         </mj-body>
       </mjml>
         </div>
