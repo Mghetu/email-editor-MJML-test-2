@@ -360,20 +360,41 @@ async function initialiseCustomBlocks(editor) {
 function setupModuleLibraryControls(editor) {
   ensureModuleLibraryReady(editor);
 
-  const panelsApi = editor?.Panels;
-  const commandsApi = editor?.Commands;
+  if (!editor) {
+    return;
+  }
 
-  if (!panelsApi || !commandsApi) {
+  const panelsApi = editor.Panels;
+  const commandsApi = editor.Commands;
+
+  const areControlsReady =
+    panelsApi &&
+    commandsApi &&
+    typeof panelsApi.addButton === 'function' &&
+    typeof panelsApi.getButton === 'function' &&
+    typeof commandsApi.add === 'function' &&
+    typeof commandsApi.get === 'function';
+
+  if (!areControlsReady) {
+    if (
+      typeof editor.once === 'function' &&
+      !editor.__moduleLibraryControlsDeferred
+    ) {
+      editor.__moduleLibraryControlsDeferred = true;
+      editor.once('load', () => {
+        editor.__moduleLibraryControlsDeferred = false;
+        setupModuleLibraryControls(editor);
+      });
+    }
     return;
   }
 
   const getModuleLibraryButton = () =>
-    typeof panelsApi.getButton === 'function'
-      ? panelsApi.getButton('views', MODULE_LIBRARY_COMMAND_ID)
-      : null;
+    panelsApi.getButton('views', MODULE_LIBRARY_COMMAND_ID);
 
   const hasCommand =
-    typeof commandsApi.get === 'function' && commandsApi.get(MODULE_LIBRARY_COMMAND_ID);
+    typeof commandsApi.get === 'function' &&
+    commandsApi.get(MODULE_LIBRARY_COMMAND_ID);
 
   if (!hasCommand) {
     commandsApi.add(MODULE_LIBRARY_COMMAND_ID, {
@@ -569,6 +590,7 @@ export function initEditor() {
   );
 
   window.editor.on('load', function () {
+    setupModuleLibraryControls(window.editor);
     enforceDefaultFontFamily(window.editor);
     registerViewsContainerLayoutSync(window.editor);
     removeLayersAndBlocksFromRightPanel(window.editor);
