@@ -11,7 +11,7 @@ export const DATA_HERO = "data:image/svg+xml;utf8," + encodeURIComponent(`
     </defs>
     <rect width='800' height='300' fill='url(#g)'/>
     <text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle'
-      font-family='Aptos, sans-serif' font-size='36' fill='#fff'>
+      font-family='Aptos, Arial, sans-serif' font-size='36' fill='#fff'>
       Hero Placeholder
     </text>
   </svg>
@@ -24,8 +24,7 @@ export const SampleTemplates = {
 <mjml>
   <mj-head>
     <mj-attributes>
-      <mj-all font-family="${Theme.fontFamily}" />
-      <mj-text font-size="14px" color="#222222" />
+      <mj-text font-size="14px" color="#222222" font-family="${Theme.fontFamily}" />
       <mj-button background-color="${Theme.brandColor}" color="#ffffff" border-radius="4px" />
       <mj-image padding="0" />
     </mj-attributes>
@@ -84,8 +83,7 @@ export const SampleTemplates = {
 <mjml>
   <mj-head>
     <mj-attributes>
-      <mj-all font-family="${Theme.fontFamily}" />
-      <mj-text font-size="14px" color="#222222" />
+      <mj-text font-size="14px" color="#222222" font-family="${Theme.fontFamily}" />
       <mj-button background-color="${Theme.brandColor}" color="#ffffff" border-radius="4px" />
     </mj-attributes>
   </mj-head>
