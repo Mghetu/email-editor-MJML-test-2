@@ -3,7 +3,6 @@
   <head>
     <meta charset="utf-8" />
     <title>GrapesJS MJML Plugin</title>
-    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
     <link
       rel="stylesheet"
       href="https://unpkg.com/grapesjs/dist/css/grapes.min.css"
@@ -12,8 +11,6 @@
       rel="stylesheet"
       href="https://grapesjs.com/assets/styles/grapesjs/grapesjs-preset-mjml.css"
     />
-    <!-- Load Aptos so the editor UI and starter MJML share the same default font -->
-    <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/aptos" />
     <link rel="stylesheet" href="css/app.css" />
     <script src="https://unpkg.com/grapesjs"></script>
     <script src="https://unpkg.com/grapesjs-mjml"></script>
@@ -64,10 +61,12 @@
       </nav>
       <div class="custom-editor-main">
         <div id="gjs" style="height:0px; overflow:hidden">
-      <mjml>
+       <mjml>
         <mj-head>
-          <!-- Register the Aptos font name so MJML output matches locally installed fonts -->
-          <mj-font name="Aptos" />
+          <mj-font
+            name="Barlow"
+            href="https://fonts.googleapis.com/css?family=Barlow"
+          ></mj-font>
 
           <mj-style>
             .slogan {
@@ -79,14 +78,14 @@
           <!-- Company Header -->
           <mj-section background-color="#f0f0f0">
             <mj-column border="10px solid #F45E43">
-              <mj-text font-family="'Aptos', 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif">A first line of text</mj-text>
+              <mj-text font-family="Barlow">A first line of text</mj-text>
               <mj-spacer height="50px" />
             </mj-column>
           </mj-section>
 
           <!-- Image Header -->
           <mj-section
-            background-url="https://1.bp.blogspot.com/-TPrfhxbYpDY/Uh3Refzk02I/AAAAAAAALw8/5sUJ0UUGYuw/s1600/New+York+in+The+1960's+-+70's+(2).jpg"
+            background-url="http://1.bp.blogspot.com/-TPrfhxbYpDY/Uh3Refzk02I/AAAAAAAALw8/5sUJ0UUGYuw/s1600/New+York+in+The+1960's+-+70's+(2).jpg"
             background-size="cover"
             background-repeat="no-repeat"
           >
@@ -96,7 +95,7 @@
                 align="center"
                 color="#fff"
                 font-size="40px"
-                font-family="'Aptos', 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif"
+                font-family="Helvetica Neue"
                 >Slogan here</mj-text
               >
               <mj-button background-color="#F63A4D" href="#">
@@ -113,7 +112,7 @@
                   <mj-text
                     font-style="italic"
                     font-size="20px"
-                    font-family="'Aptos', 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif"
+                    font-family="Helvetica Neue"
                     color="#626262"
                     >My Awesome Text</mj-text
                   >
@@ -145,7 +144,7 @@
               <mj-text
                 font-style="italic"
                 font-size="20px"
-                font-family="'Aptos', 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif"
+                font-family="Helvetica Neue"
                 color="#626262"
               >
                 Find amazing places ...
@@ -158,7 +157,65 @@
               </mj-text>
             </mj-column>
           </mj-section>
-         
+          <mj-section>
+            <mj-column>
+              <mj-text
+                font-style="italic"
+                font-size="20px"
+                font-family="Helvetica Neue"
+                color="#626262"
+                align="center"
+              >
+                ... with real-life images
+              </mj-text>
+            </mj-column>
+          </mj-section>
+          <mj-raw>
+            <div class="container">
+              <img
+                class="item"
+                src="https://source.unsplash.com/random/200x141?random"
+                alt="Example image"
+              />
+              <img
+                class="item"
+                src="https://source.unsplash.com/random/200x142?random"
+                alt="Example image"
+              />
+              <img
+                class="item"
+                src="https://source.unsplash.com/random/200x143?random"
+                alt="Example image"
+              />
+              <img
+                class="item"
+                src="https://source.unsplash.com/random/200x144?random"
+                alt="Example image"
+              />
+              <img
+                class="item"
+                src="https://source.unsplash.com/random/200x145?random"
+                alt="Example image"
+              />
+              <img
+                class="item"
+                src="https://source.unsplash.com/random/200x146?random"
+                alt="Example image"
+              />
+            </div>
+          </mj-raw>
+          <!-- Icons -->
+          <mj-section background-color="#fbfbfb">
+            <mj-column>
+              <mj-image width="100px" src="http://191n.mj.am/img/191n/3s/x0l.png" />
+            </mj-column>
+            <mj-column>
+              <mj-image width="100px" src="http://191n.mj.am/img/191n/3s/x01.png" />
+            </mj-column>
+            <mj-column>
+              <mj-image width="100px" src="http://191n.mj.am/img/191n/3s/x0s.png" />
+            </mj-column>
+          </mj-section>
 
           <!-- Footer -->
           <mj-section background-color="#e7e7e7">

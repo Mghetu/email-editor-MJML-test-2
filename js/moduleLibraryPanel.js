@@ -4,15 +4,7 @@ import { insertModuleIntoCanvas } from './moduleManagerUI.js';
 const PANEL_ID = 'module-library-panel';
 const MARKETING_LIST_ID = 'marketing-templates-list';
 const MODULE_LIST_WRAPPER_ID = 'module-library-modules';
-const MODULE_LIBRARY_BUTTON_ID = 'open-module-library';
-const MODULE_LIBRARY_COMMAND_ID = 'show-module-library';
-const MODULE_LIBRARY_ACTIVE_CLASS = 'views-container--module-library-active';
-const MODULE_LIBRARY_HIDDEN_ATTR = 'data-module-library-hidden';
-const MODULE_LIBRARY_PREV_DISPLAY_ATTR = 'data-module-library-prev-display';
-const VIEWS_PANEL_ID = 'views';
-const VIEWS_CONTAINER_NAV_OFFSET_VAR = '--views-container-nav-offset';
-const DEFAULT_VIEWS_NAV_OFFSET = 42;
-const NAV_OBSERVER_KEY = '__moduleLibraryViewsNavObserver';
+const MODULE_LIBRARY_VIEW_FLAG = 'moduleLibraryView';
 
 function buildPanelMarkup() {
   const panel = document.createElement('section');
@@ -58,69 +50,50 @@ function resolveViewsContainer(editor) {
   return viewsPanel.view?.el || null;
 }
 
-function resolveViewsToolbar(editor) {
-  const panels = editor?.Panels;
-  if (!panels || typeof panels.getPanel !== 'function') {
-    return null;
-  }
-
-  const viewsPanel = panels.getPanel(VIEWS_PANEL_ID);
-  if (!viewsPanel) {
-    return null;
-  }
-
-  return viewsPanel.get('el') || viewsPanel.view?.el || null;
-}
-
-function syncViewsContainerNavOffset(editor, viewsContainer) {
-  if (!viewsContainer) {
-    return;
-  }
-
-  const toolbarEl = resolveViewsToolbar(editor);
-  const toolbarHeight = toolbarEl?.getBoundingClientRect().height;
-  const offsetValue = Number.isFinite(toolbarHeight) && toolbarHeight > 0 ? toolbarHeight : DEFAULT_VIEWS_NAV_OFFSET;
-
-  viewsContainer.style.setProperty(VIEWS_CONTAINER_NAV_OFFSET_VAR, `${offsetValue}px`);
-}
-
-function ensureToolbarObserver(editor, viewsContainer) {
-  if (!viewsContainer || typeof ResizeObserver === 'undefined') {
-    return;
-  }
-
-  const toolbarEl = resolveViewsToolbar(editor);
-  if (!toolbarEl) {
-    return;
-  }
-
-  const existingObserver = viewsContainer[NAV_OBSERVER_KEY];
-  if (existingObserver) {
-    existingObserver.disconnect();
-  }
-
-  const observer = new ResizeObserver(() => {
-    syncViewsContainerNavOffset(editor, viewsContainer);
-  });
-
-  observer.observe(toolbarEl);
-  viewsContainer[NAV_OBSERVER_KEY] = observer;
-}
-
 export function mountModuleLibraryPanel(editor) {
   const viewsContainer = resolveViewsContainer(editor);
   if (!viewsContainer) {
     return null;
   }
-  syncViewsContainerNavOffset(editor, viewsContainer);
-  ensureToolbarObserver(editor, viewsContainer);
+
   let panel = viewsContainer.querySelector(`#${PANEL_ID}`);
   if (!panel) {
     panel = buildPanelMarkup();
-    viewsContainer.appendChild(panel);
+    panel.hidden = true;
+    panel.setAttribute('aria-hidden', 'true');
+    panel.dataset.moduleLibraryInitialised = 'true';
+    viewsContainer.prepend(panel);
   }
 
   return panel;
+}
+
+function markOtherViewsHidden(viewsContainer, panel) {
+  const children = Array.from(viewsContainer.children || []);
+
+  children.forEach((child) => {
+    if (!child || child === panel) {
+      return;
+    }
+
+    child.dataset[MODULE_LIBRARY_VIEW_FLAG] = 'hidden';
+    child.style.display = 'none';
+  });
+}
+
+function restoreOtherViews(viewsContainer, panel) {
+  const children = Array.from(viewsContainer.children || []);
+
+  children.forEach((child) => {
+    if (!child || child === panel) {
+      return;
+    }
+
+    if (child.dataset[MODULE_LIBRARY_VIEW_FLAG] === 'hidden') {
+      delete child.dataset[MODULE_LIBRARY_VIEW_FLAG];
+      child.style.removeProperty('display');
+    }
+  });
 }
 
 function createEmptyState() {
@@ -210,10 +183,10 @@ export function ensureModuleLibraryReady(editor) {
     return;
   }
 
-  if (!panel.hasAttribute('data-module-library-initialised')) {
-    panel.setAttribute('hidden', 'true');
+  if (!panel.dataset.moduleLibraryInitialised) {
+    panel.hidden = true;
     panel.setAttribute('aria-hidden', 'true');
-    panel.setAttribute('data-module-library-initialised', 'true');
+    panel.dataset.moduleLibraryInitialised = 'true';
   }
 
   const moduleListWrapper = panel.querySelector(`#${MODULE_LIST_WRAPPER_ID}`);
@@ -223,49 +196,7 @@ export function ensureModuleLibraryReady(editor) {
   }
 }
 
-function hideNonModuleViews(viewsContainer, panel) {
-  Array.from(viewsContainer.children).forEach((child) => {
-    if (child === panel) {
-      child.removeAttribute(MODULE_LIBRARY_HIDDEN_ATTR);
-      child.removeAttribute(MODULE_LIBRARY_PREV_DISPLAY_ATTR);
-      child.style.display = '';
-      return;
-    }
-
-    if (child.hasAttribute(MODULE_LIBRARY_HIDDEN_ATTR)) {
-      return;
-    }
-
-    const currentDisplay = child.style.display || '';
-    child.setAttribute(MODULE_LIBRARY_HIDDEN_ATTR, 'true');
-    child.setAttribute(MODULE_LIBRARY_PREV_DISPLAY_ATTR, currentDisplay);
-    child.setAttribute('aria-hidden', 'true');
-    child.style.display = 'none';
-  });
-}
-
-function restoreNonModuleViews(viewsContainer, panel) {
-  Array.from(viewsContainer.children).forEach((child) => {
-    if (child === panel) {
-      child.style.display = '';
-      child.setAttribute('hidden', 'true');
-      child.setAttribute('aria-hidden', 'true');
-      return;
-    }
-
-    if (!child.hasAttribute(MODULE_LIBRARY_HIDDEN_ATTR)) {
-      return;
-    }
-
-    const previousDisplay = child.getAttribute(MODULE_LIBRARY_PREV_DISPLAY_ATTR) || '';
-    child.style.display = previousDisplay;
-    child.removeAttribute(MODULE_LIBRARY_HIDDEN_ATTR);
-    child.removeAttribute(MODULE_LIBRARY_PREV_DISPLAY_ATTR);
-    child.removeAttribute('aria-hidden');
-  });
-}
-
-function showModuleLibrary(editor) {
+export function showModuleLibraryPanel(editor) {
   const viewsContainer = resolveViewsContainer(editor);
   const panel = mountModuleLibraryPanel(editor);
 
@@ -273,117 +204,23 @@ function showModuleLibrary(editor) {
     return;
   }
 
-  syncViewsContainerNavOffset(editor, viewsContainer);
-  viewsContainer.classList.add(MODULE_LIBRARY_ACTIVE_CLASS);
-  panel.removeAttribute('hidden');
-  panel.setAttribute('aria-hidden', 'false');
-
-  hideNonModuleViews(viewsContainer, panel);
+  panel.hidden = false;
+  panel.removeAttribute('aria-hidden');
+  viewsContainer.dataset.moduleLibraryVisible = 'true';
+  markOtherViewsHidden(viewsContainer, panel);
 }
 
-function hideModuleLibrary(editor) {
+export function hideModuleLibraryPanel(editor) {
   const viewsContainer = resolveViewsContainer(editor);
-  if (!viewsContainer) {
+  const panel = viewsContainer?.querySelector(`#${PANEL_ID}`);
+
+  if (!viewsContainer || !panel) {
     return;
   }
 
-  const panel = viewsContainer.querySelector(`#${PANEL_ID}`);
-  if (!panel) {
-    return;
-  }
-
-  syncViewsContainerNavOffset(editor, viewsContainer);
-  viewsContainer.classList.remove(MODULE_LIBRARY_ACTIVE_CLASS);
-  restoreNonModuleViews(viewsContainer, panel);
-}
-
-const moduleLibraryCommand = {
-  run(ed) {
-    ensureModuleLibraryReady(ed);
-    showModuleLibrary(ed);
-  },
-  stop(ed) {
-    hideModuleLibrary(ed);
-  },
-};
-
-function ensureModuleLibraryCommand(editor) {
-  const commands = editor?.Commands;
-  if (!commands || typeof commands.add !== 'function') {
-    return false;
-  }
-
-  const hasCommand =
-    (typeof commands.has === 'function' && commands.has(MODULE_LIBRARY_COMMAND_ID)) ||
-    (typeof commands.get === 'function' && commands.get(MODULE_LIBRARY_COMMAND_ID));
-
-  if (!hasCommand) {
-    commands.add(MODULE_LIBRARY_COMMAND_ID, moduleLibraryCommand);
-  }
-
-  return true;
-}
-
-function ensureModuleLibraryButton(editor, commandRegistered = false) {
-  const panels = editor?.Panels;
-  if (!panels || typeof panels.getButton !== 'function') {
-    return false;
-  }
-
-  const existingButton = panels.getButton('views', MODULE_LIBRARY_BUTTON_ID);
-  if (existingButton) {
-    if (commandRegistered && typeof existingButton.get === 'function') {
-      const currentCommand = existingButton.get('command');
-      if (currentCommand !== MODULE_LIBRARY_COMMAND_ID) {
-        existingButton.set('command', MODULE_LIBRARY_COMMAND_ID);
-      }
-    }
-    return true;
-  }
-
-  const viewsPanel = typeof panels.getPanel === 'function' ? panels.getPanel('views') : null;
-  if (!viewsPanel) {
-    return false;
-  }
-
-  const commandBinding = commandRegistered ? MODULE_LIBRARY_COMMAND_ID : moduleLibraryCommand;
-
-  panels.addButton('views', {
-    id: MODULE_LIBRARY_BUTTON_ID,
-    className: 'module-library-button',
-    attributes: {
-      title: 'Module Library',
-    },
-    label: 'Modules',
-    command: commandBinding,
-    togglable: true,
-  });
-
-  return true;
-}
-
-export function registerModuleLibraryView(editor) {
-  if (!editor) {
-    return;
-  }
-
-  const commandRegistered = ensureModuleLibraryCommand(editor);
-  const buttonRegistered = ensureModuleLibraryButton(editor, commandRegistered);
-  ensureModuleLibraryReady(editor);
-
-  if (commandRegistered && buttonRegistered) {
-    return;
-  }
-
-  const onceLoad = typeof editor.once === 'function' ? editor.once.bind(editor) : null;
-  if (!onceLoad) {
-    return;
-  }
-
-  onceLoad('load', () => {
-    const loadedCommandRegistered = ensureModuleLibraryCommand(editor);
-    ensureModuleLibraryButton(editor, loadedCommandRegistered);
-    ensureModuleLibraryReady(editor);
-  });
+  panel.hidden = true;
+  panel.setAttribute('aria-hidden', 'true');
+  delete viewsContainer.dataset.moduleLibraryVisible;
+  restoreOtherViews(viewsContainer, panel);
 }
 

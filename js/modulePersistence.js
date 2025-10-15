@@ -25,34 +25,22 @@ function toIsoString(value, fallback) {
   return new Date().toISOString();
 }
 
-function toTrimmedString(value) {
-  if (value === undefined || value === null) {
-    return '';
-  }
-
-  return String(value).trim();
-}
-
 function sanitizeModuleFields(moduleObj = {}) {
-  const id = toTrimmedString(moduleObj.id);
-  const label = toTrimmedString(moduleObj.label);
-  const markup = toTrimmedString(moduleObj.markup);
+  const { id, label, markup } = moduleObj;
 
   if (!id || !label || !markup) {
     throw new Error('Module definitions require id, label, and markup.');
   }
 
-  const categoryValue = toTrimmedString(moduleObj.category);
   const sanitized = {
-    id,
-    label,
-    category: categoryValue || DEFAULT_CATEGORY,
-    markup
+    id: String(id).trim(),
+    label: String(label).trim(),
+    category: moduleObj.category ? String(moduleObj.category).trim() : DEFAULT_CATEGORY,
+    markup: String(markup).trim()
   };
 
-  const thumbnailValue = toTrimmedString(moduleObj.thumbnail);
-  if (thumbnailValue) {
-    sanitized.thumbnail = thumbnailValue;
+  if (moduleObj.thumbnail) {
+    sanitized.thumbnail = String(moduleObj.thumbnail).trim();
   }
 
   return sanitized;
