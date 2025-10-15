@@ -31,11 +31,15 @@ describe('Default font configuration', () => {
     }
   });
 
-  it('Default starter MJML registers the Aptos font asset', async () => {
+  it('Default starter MJML registers the Aptos font name without remote href', async () => {
     const indexHtml = await readFile(new URL('../index.html', import.meta.url), 'utf8');
     assert.ok(
-      indexHtml.includes('name="Aptos"'),
-      'Starter MJML should register Aptos via <mj-font>'
+      indexHtml.includes('<mj-font name="Aptos"'),
+      'Starter MJML should register Aptos via <mj-font name="Aptos">'
+    );
+    assert.ok(
+      !indexHtml.includes('href="https://fonts.cdnfonts.com/css/aptos"'),
+      'Starter MJML should rely on the locally installed Aptos font'
     );
   });
 });

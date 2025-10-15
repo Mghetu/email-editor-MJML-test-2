@@ -66,10 +66,8 @@
         <div id="gjs" style="height:0px; overflow:hidden">
       <mjml>
         <mj-head>
-          <mj-font
-            name="Aptos"
-            href="https://fonts.cdnfonts.com/css/aptos"
-          ></mj-font>
+          <!-- Register the Aptos font name so MJML output matches locally installed fonts -->
+          <mj-font name="Aptos" />
 
           <mj-style>
             .slogan {
@@ -81,7 +79,7 @@
           <!-- Company Header -->
           <mj-section background-color="#f0f0f0">
             <mj-column border="10px solid #F45E43">
-              <mj-text font-family="Aptos, 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif">A first line of text</mj-text>
+              <mj-text font-family="'Aptos', 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif">A first line of text</mj-text>
               <mj-spacer height="50px" />
             </mj-column>
           </mj-section>
@@ -98,7 +96,7 @@
                 align="center"
                 color="#fff"
                 font-size="40px"
-                font-family="Aptos, 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif"
+                font-family="'Aptos', 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif"
                 >Slogan here</mj-text
               >
               <mj-button background-color="#F63A4D" href="#">
@@ -115,7 +113,7 @@
                   <mj-text
                     font-style="italic"
                     font-size="20px"
-                    font-family="Aptos, 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif"
+                    font-family="'Aptos', 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif"
                     color="#626262"
                     >My Awesome Text</mj-text
                   >
@@ -147,7 +145,7 @@
               <mj-text
                 font-style="italic"
                 font-size="20px"
-                font-family="Aptos, 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif"
+                font-family="'Aptos', 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif"
                 color="#626262"
               >
                 Find amazing places ...
