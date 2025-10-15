@@ -12,6 +12,8 @@
       rel="stylesheet"
       href="https://grapesjs.com/assets/styles/grapesjs/grapesjs-preset-mjml.css"
     />
+    <!-- Load Aptos so the editor UI and starter MJML share the same default font -->
+    <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/aptos" />
     <link rel="stylesheet" href="css/app.css" />
     <script src="https://unpkg.com/grapesjs"></script>
     <script src="https://unpkg.com/grapesjs-mjml"></script>
@@ -65,8 +67,8 @@
       <mjml>
         <mj-head>
           <mj-font
-            name="Barlow"
-            href="https://fonts.googleapis.com/css?family=Barlow"
+            name="Aptos"
+            href="https://fonts.cdnfonts.com/css/aptos"
           ></mj-font>
 
           <mj-style>
@@ -79,7 +81,7 @@
           <!-- Company Header -->
           <mj-section background-color="#f0f0f0">
             <mj-column border="10px solid #F45E43">
-              <mj-text font-family="Barlow">A first line of text</mj-text>
+              <mj-text font-family="Aptos, 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif">A first line of text</mj-text>
               <mj-spacer height="50px" />
             </mj-column>
           </mj-section>
@@ -96,7 +98,7 @@
                 align="center"
                 color="#fff"
                 font-size="40px"
-                font-family="Helvetica Neue"
+                font-family="Aptos, 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif"
                 >Slogan here</mj-text
               >
               <mj-button background-color="#F63A4D" href="#">
@@ -113,7 +115,7 @@
                   <mj-text
                     font-style="italic"
                     font-size="20px"
-                    font-family="Helvetica Neue"
+                    font-family="Aptos, 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif"
                     color="#626262"
                     >My Awesome Text</mj-text
                   >
@@ -145,7 +147,7 @@
               <mj-text
                 font-style="italic"
                 font-size="20px"
-                font-family="Helvetica Neue"
+                font-family="Aptos, 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif"
                 color="#626262"
               >
                 Find amazing places ...
