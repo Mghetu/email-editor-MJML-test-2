@@ -215,29 +215,14 @@ body {
 }
 
 .gjs-pn-panel.gjs-pn-views-container {
-  --views-container-nav-offset: 42px;
-  --views-panel-padding-x: 0px;
-  --views-panel-padding-y: 0px;
-  --views-panel-gap: 0px;
-  --views-panel-header-offset: var(--views-container-nav-offset);
   display: flex;
   flex-direction: column;
-  gap: var(--views-panel-gap);
-  padding: calc(var(--views-panel-header-offset) + var(--views-panel-padding-y))
-    var(--views-panel-padding-x)
-    var(--views-panel-padding-y);
+  gap: 16px;
+  padding: 16px;
   box-sizing: border-box;
 }
 
-.gjs-pn-panel.gjs-pn-views-container[data-module-library-visible='true'],
-.gjs-pn-panel.gjs-pn-views-container.views-container--module-library-active {
-  --views-panel-padding-x: 16px;
-  --views-panel-padding-y: 16px;
-  --views-panel-gap: 16px;
-}
-
-.gjs-pn-panel.gjs-pn-views-container[data-module-library-visible='true']
-  > *:not(.module-library-panel) {
+.gjs-pn-panel.gjs-pn-views-container > *:not(.module-library-panel) {
   flex: 1 1 auto;
   min-height: 0;
 }
@@ -245,7 +230,6 @@ body {
 .module-library-panel {
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;
   gap: 18px;
   padding: 18px;
   border-radius: 12px;
@@ -253,7 +237,6 @@ body {
   border: 1px solid rgba(148, 163, 184, 0.16);
   color: #f5f5f5;
   box-shadow: 0 12px 32px rgba(15, 23, 42, 0.35);
-  overflow-y: auto;
 }
 
 .module-library-panel[hidden] {
