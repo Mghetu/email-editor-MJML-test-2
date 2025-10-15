@@ -215,10 +215,11 @@ body {
 }
 
 .gjs-pn-panel.gjs-pn-views-container {
+  --views-container-nav-offset: 42px;
   --views-panel-padding-x: 0px;
   --views-panel-padding-y: 0px;
   --views-panel-gap: 0px;
-  --views-panel-header-offset: 48px;
+  --views-panel-header-offset: var(--views-container-nav-offset);
   display: flex;
   flex-direction: column;
   gap: var(--views-panel-gap);
@@ -228,7 +229,8 @@ body {
   box-sizing: border-box;
 }
 
-.gjs-pn-panel.gjs-pn-views-container[data-module-library-visible='true'] {
+.gjs-pn-panel.gjs-pn-views-container[data-module-library-visible='true'],
+.gjs-pn-panel.gjs-pn-views-container.views-container--module-library-active {
   --views-panel-padding-x: 16px;
   --views-panel-padding-y: 16px;
   --views-panel-gap: 16px;
