@@ -6,6 +6,7 @@ const MARKETING_LIST_ID = 'marketing-templates-list';
 const MODULE_LIST_WRAPPER_ID = 'module-library-modules';
 const MODULE_LIBRARY_BUTTON_ID = 'open-module-library';
 const MODULE_LIBRARY_COMMAND_ID = 'show-module-library';
+const MODULE_LIBRARY_ACTIVE_CLASS = 'views-container--module-library-active';
 const MODULE_LIBRARY_HIDDEN_ATTR = 'data-module-library-hidden';
 const MODULE_LIBRARY_PREV_DISPLAY_ATTR = 'data-module-library-prev-display';
 
@@ -217,6 +218,7 @@ function showModuleLibrary(editor) {
     return;
   }
 
+  viewsContainer.classList.add(MODULE_LIBRARY_ACTIVE_CLASS);
   panel.removeAttribute('hidden');
   panel.setAttribute('aria-hidden', 'false');
 
@@ -234,6 +236,7 @@ function hideModuleLibrary(editor) {
     return;
   }
 
+  viewsContainer.classList.remove(MODULE_LIBRARY_ACTIVE_CLASS);
   restoreNonModuleViews(viewsContainer, panel);
 }
 
