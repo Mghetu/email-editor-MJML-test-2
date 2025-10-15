@@ -242,43 +242,44 @@ export function registerModuleLibraryView(editor) {
     return;
   }
 
-  const panels = editor.Panels;
-  if (!panels) {
-    return;
-  }
-
-  const viewsPanel = panels.getPanel('views');
-  if (!viewsPanel) {
-    return;
-  }
-
-  const existingButton = panels.getButton('views', MODULE_LIBRARY_BUTTON_ID);
-  if (!existingButton) {
-    panels.addButton('views', {
-      id: MODULE_LIBRARY_BUTTON_ID,
-      className: 'module-library-button',
-      attributes: {
-        title: 'Module Library',
-      },
-      label: 'Modules',
-      command: MODULE_LIBRARY_COMMAND_ID,
-      togglable: true,
-    });
-  }
-
   const commands = editor.Commands;
-  const hasCommand =
-    commands && typeof commands.get === 'function' && commands.get(MODULE_LIBRARY_COMMAND_ID);
-  if (!hasCommand) {
-    commands.add(MODULE_LIBRARY_COMMAND_ID, {
-      run(ed) {
-        ensureModuleLibraryReady(ed);
-        showModuleLibrary(ed);
-      },
-      stop(ed) {
-        hideModuleLibrary(ed);
-      },
-    });
+  const canAddCommands = commands && typeof commands.add === 'function';
+  if (canAddCommands) {
+    const commandAlreadyRegistered =
+      (typeof commands.has === 'function' && commands.has(MODULE_LIBRARY_COMMAND_ID)) ||
+      (typeof commands.get === 'function' && commands.get(MODULE_LIBRARY_COMMAND_ID));
+
+    if (!commandAlreadyRegistered) {
+      commands.add(MODULE_LIBRARY_COMMAND_ID, {
+        run(ed) {
+          ensureModuleLibraryReady(ed);
+          showModuleLibrary(ed);
+        },
+        stop(ed) {
+          hideModuleLibrary(ed);
+        },
+      });
+    }
+  }
+
+  const panels = editor.Panels;
+  if (panels) {
+    const existingButton = panels.getButton('views', MODULE_LIBRARY_BUTTON_ID);
+    if (!existingButton) {
+      const viewsPanel = panels.getPanel('views');
+      if (viewsPanel) {
+        panels.addButton('views', {
+          id: MODULE_LIBRARY_BUTTON_ID,
+          className: 'module-library-button',
+          attributes: {
+            title: 'Module Library',
+          },
+          label: 'Modules',
+          command: MODULE_LIBRARY_COMMAND_ID,
+          togglable: true,
+        });
+      }
+    }
   }
 
   ensureModuleLibraryReady(editor);
