@@ -337,7 +337,36 @@ export function initEditor() {
       openBlocksBtn.set('active', false);
     }
 
-    window.editor.Commands.stop('open-blocks');
+    var stopCommandIfAvailable = function (commandId) {
+      var commands = window.editor.Commands;
+      if (!commands || typeof commands.stop !== 'function') {
+        return;
+      }
+
+      var hasMethod = typeof commands.has === 'function';
+
+      if (hasMethod && !commands.has(commandId)) {
+        return;
+      }
+
+      try {
+        commands.stop(commandId);
+      } catch (error) {
+        console.info('Unable to stop command:', commandId, error);
+      }
+    };
+
+    stopCommandIfAvailable('open-blocks');
+    stopCommandIfAvailable('open-layers');
+    stopCommandIfAvailable('open-pages');
+
+    if (panels) {
+      ['open-blocks', 'open-layers', 'open-pages'].forEach(function (buttonId) {
+        if (panels.getButton('views', buttonId)) {
+          panels.removeButton('views', buttonId);
+        }
+      });
+    }
   });
 }
 

@@ -54,6 +54,19 @@ export function mountModuleLibraryPanel(editor) {
   if (!viewsContainer) {
     return null;
   }
+  const redundantSelectors = [
+    '.gjs-blocks-c',
+    '.gjs-blocks-cs',
+    '.gjs-layers-c',
+    '.gjs-pages-c',
+    '.gjs-pn-pages',
+  ];
+
+  redundantSelectors.forEach((selector) => {
+    viewsContainer.querySelectorAll(selector).forEach((element) => {
+      element.remove();
+    });
+  });
 
   let panel = viewsContainer.querySelector(`#${PANEL_ID}`);
   if (!panel) {
