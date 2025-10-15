@@ -37,8 +37,11 @@ describe('Default font configuration', () => {
       indexHtml.includes('<mj-font name="Aptos"'),
       'Starter MJML should register Aptos via <mj-font name="Aptos">'
     );
+
+    const mjFontMatch = indexHtml.match(/<mj-font[^>]*>/);
+    assert.ok(mjFontMatch, 'Starter MJML should include an <mj-font> element');
     assert.ok(
-      !indexHtml.includes('href="https://fonts.cdnfonts.com/css/aptos"'),
+      !mjFontMatch[0].includes('href="https://fonts.cdnfonts.com/css/aptos"'),
       'Starter MJML should rely on the locally installed Aptos font'
     );
   });

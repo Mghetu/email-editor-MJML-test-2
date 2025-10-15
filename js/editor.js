@@ -283,7 +283,7 @@ function configureStorageEvents(editor) {
 }
 
 export function initEditor() {
-  window.editor = grapesjs.init({
+  const editor = grapesjs.init({
     height: '100%',
     noticeOnUnload: false,
     storageManager: {
@@ -310,32 +310,106 @@ export function initEditor() {
     plugins: ['grapesjs-mjml'],
     pluginsOpts: {
       'grapesjs-mjml': {}
+    },
+    styleManager: {
+      sectors: [
+        {
+          name: 'Typography',
+          open: true,
+          buildProps: ['font-family', 'font-size', 'font-weight', 'line-height', 'color'],
+          properties: [
+            {
+              property: 'font-family',
+              defaults: 'Aptos, Arial, Helvetica, sans-serif',
+              options: [
+                { id: 'Aptos, Arial, Helvetica, sans-serif', label: 'Aptos' }
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    rte: {
+      actions: [
+        'bold',
+        'italic',
+        'underline',
+        'strikethrough',
+        'link',
+        'unlink',
+        'alignLeft',
+        'alignCenter',
+        'alignRight',
+        'alignJustify',
+        {
+          name: 'fontFamily',
+          items: [
+            { name: 'Aptos', value: 'Aptos, Arial, Helvetica, sans-serif' }
+          ],
+        },
+      ],
+    },
+  });
+
+  window.editor = editor;
+
+  // After editor is initialized
+  editor.on('load', () => {
+    editor.Css.addRules('* { font-family: Aptos, Arial, Helvetica, sans-serif; }');
+
+    const wrapper = editor.getWrapper();
+    const [mjml] = wrapper.find('mjml');
+    const root = mjml || wrapper;
+
+    let [head] = root.find('mj-head');
+    if (!head) {
+      const appendedHead = root.append({ type: 'mj-head' });
+      head = Array.isArray(appendedHead) ? appendedHead[0] : appendedHead;
+    }
+
+    const headComponent = head && typeof head.find === 'function' ? head : null;
+    const hasAptosFont = headComponent
+      ? headComponent.find('mj-font').some((cmp) => {
+          const attributes =
+            typeof cmp.getAttributes === 'function' ? cmp.getAttributes() : cmp.attributes || {};
+          return (attributes.name || '').toLowerCase() === 'aptos';
+        })
+      : false;
+
+    if (headComponent && !hasAptosFont) {
+      headComponent.append({
+        type: 'mj-font',
+        attributes: {
+          name: 'Aptos',
+          href: 'REPLACE_WITH_HOSTED_APTOS_WOFF2_URL',
+        },
+      });
     }
   });
 
-  configureStorageEvents(window.editor);
-  initialiseCustomBlocks(window.editor);
-  setupSaveBlockButton(window.editor);
-  registerModuleLibraryView(window.editor);
+  configureStorageEvents(editor);
+  initialiseCustomBlocks(editor);
+  setupSaveBlockButton(editor);
+  registerModuleLibraryView(editor);
 
-  window.editor.on('load', function () {
-    registerModuleLibraryView(window.editor);
-    initModuleManagerUI(window.editor);
-    initMarketingTemplatesUI(window.editor);
-    window.editor.BlockManager.render();
-    window.editor.LayerManager.render();
+  editor.on('load', function () {
+    registerModuleLibraryView(editor);
+    initModuleManagerUI(editor);
+    initMarketingTemplatesUI(editor);
+    editor.BlockManager.render();
+    editor.LayerManager.render();
 
     // Close the default GrapesJS block panel opened by the `open-blocks` command
     // so only the custom blocks sidebar remains visible. Explicitly deactivate the
     // panel button as stopping the command alone leaves the view docked open.
-    var panels = window.editor.Panels;
+    var panels = editor.Panels;
     var openBlocksBtn = panels && panels.getButton('views', 'open-blocks');
     if (openBlocksBtn) {
       openBlocksBtn.set('active', false);
     }
 
     var stopCommandIfAvailable = function (commandId) {
-      var commands = window.editor.Commands;
+      var commands = editor.Commands;
       if (!commands || typeof commands.stop !== 'function') {
         return;
       }
