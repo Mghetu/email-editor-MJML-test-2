@@ -142,8 +142,6 @@ export function initModuleManagerUI(editor) {
       return;
     }
 
-    const fragment = document.createDocumentFragment();
-
     history.forEach((entry) => {
       const item = document.createElement('article');
       item.className = 'module-versions-dialog__version';
@@ -175,10 +173,8 @@ export function initModuleManagerUI(editor) {
       markupBlock.textContent = entry.markup;
       item.appendChild(markupBlock);
 
-      fragment.appendChild(item);
+      versionsBody.appendChild(item);
     });
-
-    versionsBody.appendChild(fragment);
   };
 
   const openVersionsDialog = (module) => {
@@ -207,10 +203,7 @@ export function initModuleManagerUI(editor) {
     }
 
     renderVersionHistory(module);
-
-    if (!versionsDialog.open) {
-      versionsDialog.showModal();
-    }
+    versionsDialog.showModal();
   };
 
   const openEditDialog = (module) => {
@@ -259,7 +252,6 @@ export function initModuleManagerUI(editor) {
 
     const listElement = document.createElement('ul');
     listElement.className = 'module-list__items';
-    const fragment = document.createDocumentFragment();
 
     modules.forEach((module) => {
       const listItem = document.createElement('li');
@@ -351,10 +343,9 @@ export function initModuleManagerUI(editor) {
 
       listItem.appendChild(moduleButton);
       listItem.appendChild(actions);
-      fragment.appendChild(listItem);
+      listElement.appendChild(listItem);
     });
 
-    listElement.appendChild(fragment);
     listContainer.appendChild(listElement);
 
     if (viewingVersionsFor && versionsDialog?.open) {

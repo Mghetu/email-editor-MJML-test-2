@@ -1,9 +1,4 @@
-import { Theme } from './themes.js';
-
 const DEFAULT_CATEGORY = 'Premade Modules';
-
-// Reusable snippet so every module stays aligned with the Theme font choice.
-const FONT_ATTR = `font-family="${Theme.fontFamily}"`;
 
 export const ExampleModules = [
   {
@@ -14,13 +9,13 @@ export const ExampleModules = [
 <mj-section background-color="#ffffff" padding="24px 16px">
   <mj-column>
     <mj-image width="120px" src="https://via.placeholder.com/240x80?text=Logo" alt="Company Logo" />
-    <mj-text ${FONT_ATTR} font-size="24px" font-weight="700" padding-top="16px">Level up your workflow</mj-text>
-    <mj-text ${FONT_ATTR} color="#4b5563" padding-bottom="16px">Introduce your product benefits with a concise hero block that keeps things readable on any device.</mj-text>
-    <mj-button ${FONT_ATTR} background-color="#4338ca" color="#ffffff" href="https://example.com">Get started</mj-button>
+    <mj-text font-size="24px" font-weight="700" padding-top="16px">Level up your workflow</mj-text>
+    <mj-text color="#4b5563" padding-bottom="16px">Introduce your product benefits with a concise hero block that keeps things readable on any device.</mj-text>
+    <mj-button background-color="#4338ca" color="#ffffff" href="https://example.com">Get started</mj-button>
   </mj-column>
 </mj-section>
 `.trim(),
-    thumbnail: 'assets/thumbnails/hero-module.svg',
+    thumbnail: 'https://via.placeholder.com/140x90?text=Hero',
     metadata: {
       description: 'Pre-styled hero banner with button and supporting text.'
     }
@@ -33,22 +28,22 @@ export const ExampleModules = [
 <mj-section background-color="#f3f4f6" padding="24px 16px">
   <mj-column>
     <mj-image width="64px" src="https://via.placeholder.com/128?text=A" alt="Feature A" />
-    <mj-text ${FONT_ATTR} font-size="18px" font-weight="600" padding-top="12px">Feature One</mj-text>
-    <mj-text ${FONT_ATTR} color="#4b5563">Explain the first key benefit of your offering in just a couple sentences.</mj-text>
+    <mj-text font-size="18px" font-weight="600" padding-top="12px">Feature One</mj-text>
+    <mj-text color="#4b5563">Explain the first key benefit of your offering in just a couple sentences.</mj-text>
   </mj-column>
   <mj-column>
     <mj-image width="64px" src="https://via.placeholder.com/128?text=B" alt="Feature B" />
-    <mj-text ${FONT_ATTR} font-size="18px" font-weight="600" padding-top="12px">Feature Two</mj-text>
-    <mj-text ${FONT_ATTR} color="#4b5563">Highlight another capability or differentiator that matters to your audience.</mj-text>
+    <mj-text font-size="18px" font-weight="600" padding-top="12px">Feature Two</mj-text>
+    <mj-text color="#4b5563">Highlight another capability or differentiator that matters to your audience.</mj-text>
   </mj-column>
   <mj-column>
     <mj-image width="64px" src="https://via.placeholder.com/128?text=C" alt="Feature C" />
-    <mj-text ${FONT_ATTR} font-size="18px" font-weight="600" padding-top="12px">Feature Three</mj-text>
-    <mj-text ${FONT_ATTR} color="#4b5563">Round it out with a final benefit that reinforces your core value.</mj-text>
+    <mj-text font-size="18px" font-weight="600" padding-top="12px">Feature Three</mj-text>
+    <mj-text color="#4b5563">Round it out with a final benefit that reinforces your core value.</mj-text>
   </mj-column>
 </mj-section>
 `.trim(),
-    thumbnail: 'assets/thumbnails/feature-columns.svg',
+    thumbnail: 'https://via.placeholder.com/140x90?text=Columns',
     metadata: {
       description: 'Three-column feature summary with icons and supporting copy.'
     }
