@@ -237,6 +237,16 @@ function hideModuleLibrary(editor) {
   restoreNonModuleViews(viewsContainer, panel);
 }
 
+const moduleLibraryCommand = {
+  run(ed) {
+    ensureModuleLibraryReady(ed);
+    showModuleLibrary(ed);
+  },
+  stop(ed) {
+    hideModuleLibrary(ed);
+  },
+};
+
 function ensureModuleLibraryCommand(editor) {
   const commands = editor?.Commands;
   if (!commands || typeof commands.add !== 'function') {
@@ -248,21 +258,13 @@ function ensureModuleLibraryCommand(editor) {
     (typeof commands.get === 'function' && commands.get(MODULE_LIBRARY_COMMAND_ID));
 
   if (!hasCommand) {
-    commands.add(MODULE_LIBRARY_COMMAND_ID, {
-      run(ed) {
-        ensureModuleLibraryReady(ed);
-        showModuleLibrary(ed);
-      },
-      stop(ed) {
-        hideModuleLibrary(ed);
-      },
-    });
+    commands.add(MODULE_LIBRARY_COMMAND_ID, moduleLibraryCommand);
   }
 
   return true;
 }
 
-function ensureModuleLibraryButton(editor) {
+function ensureModuleLibraryButton(editor, commandRegistered = false) {
   const panels = editor?.Panels;
   if (!panels || typeof panels.getButton !== 'function') {
     return false;
@@ -270,6 +272,12 @@ function ensureModuleLibraryButton(editor) {
 
   const existingButton = panels.getButton('views', MODULE_LIBRARY_BUTTON_ID);
   if (existingButton) {
+    if (commandRegistered && typeof existingButton.get === 'function') {
+      const currentCommand = existingButton.get('command');
+      if (currentCommand !== MODULE_LIBRARY_COMMAND_ID) {
+        existingButton.set('command', MODULE_LIBRARY_COMMAND_ID);
+      }
+    }
     return true;
   }
 
@@ -278,6 +286,8 @@ function ensureModuleLibraryButton(editor) {
     return false;
   }
 
+  const commandBinding = commandRegistered ? MODULE_LIBRARY_COMMAND_ID : moduleLibraryCommand;
+
   panels.addButton('views', {
     id: MODULE_LIBRARY_BUTTON_ID,
     className: 'module-library-button',
@@ -285,7 +295,7 @@ function ensureModuleLibraryButton(editor) {
       title: 'Module Library',
     },
     label: 'Modules',
-    command: MODULE_LIBRARY_COMMAND_ID,
+    command: commandBinding,
     togglable: true,
   });
 
@@ -298,7 +308,7 @@ export function registerModuleLibraryView(editor) {
   }
 
   const commandRegistered = ensureModuleLibraryCommand(editor);
-  const buttonRegistered = ensureModuleLibraryButton(editor);
+  const buttonRegistered = ensureModuleLibraryButton(editor, commandRegistered);
   ensureModuleLibraryReady(editor);
 
   if (commandRegistered && buttonRegistered) {
@@ -311,8 +321,8 @@ export function registerModuleLibraryView(editor) {
   }
 
   onceLoad('load', () => {
-    ensureModuleLibraryCommand(editor);
-    ensureModuleLibraryButton(editor);
+    const loadedCommandRegistered = ensureModuleLibraryCommand(editor);
+    ensureModuleLibraryButton(editor, loadedCommandRegistered);
     ensureModuleLibraryReady(editor);
   });
 }
