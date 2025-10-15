@@ -575,7 +575,8 @@ body {
   color: #f8fafc;
   font-size: 14px;
   padding: 10px 12px;
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Aptos', 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  /* Keep this stack in sync with DEFAULT_FONT_FAMILY in js/themes.js */
   box-sizing: border-box;
 }
 
