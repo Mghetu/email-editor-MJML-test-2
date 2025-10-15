@@ -215,16 +215,19 @@ body {
 }
 
 .gjs-pn-panel.gjs-pn-views-container {
+  --views-container-nav-offset: 42px;
   display: flex;
   flex-direction: column;
   gap: 0;
   padding: 0;
+  padding-top: var(--views-container-nav-offset);
   box-sizing: border-box;
 }
 
 .gjs-pn-panel.gjs-pn-views-container.views-container--module-library-active {
   gap: 16px;
   padding: 16px;
+  padding-top: calc(var(--views-container-nav-offset) + 16px);
 }
 
 .gjs-pn-panel.gjs-pn-views-container > *:not(.module-library-panel) {

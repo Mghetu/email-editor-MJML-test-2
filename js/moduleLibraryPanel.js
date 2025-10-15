@@ -9,6 +9,10 @@ const MODULE_LIBRARY_COMMAND_ID = 'show-module-library';
 const MODULE_LIBRARY_ACTIVE_CLASS = 'views-container--module-library-active';
 const MODULE_LIBRARY_HIDDEN_ATTR = 'data-module-library-hidden';
 const MODULE_LIBRARY_PREV_DISPLAY_ATTR = 'data-module-library-prev-display';
+const VIEWS_PANEL_ID = 'views';
+const VIEWS_CONTAINER_NAV_OFFSET_VAR = '--views-container-nav-offset';
+const DEFAULT_VIEWS_NAV_OFFSET = 42;
+const NAV_OBSERVER_KEY = '__moduleLibraryViewsNavObserver';
 
 function buildPanelMarkup() {
   const panel = document.createElement('section');
@@ -54,11 +58,62 @@ function resolveViewsContainer(editor) {
   return viewsPanel.view?.el || null;
 }
 
+function resolveViewsToolbar(editor) {
+  const panels = editor?.Panels;
+  if (!panels || typeof panels.getPanel !== 'function') {
+    return null;
+  }
+
+  const viewsPanel = panels.getPanel(VIEWS_PANEL_ID);
+  if (!viewsPanel) {
+    return null;
+  }
+
+  return viewsPanel.get('el') || viewsPanel.view?.el || null;
+}
+
+function syncViewsContainerNavOffset(editor, viewsContainer) {
+  if (!viewsContainer) {
+    return;
+  }
+
+  const toolbarEl = resolveViewsToolbar(editor);
+  const toolbarHeight = toolbarEl?.getBoundingClientRect().height;
+  const offsetValue = Number.isFinite(toolbarHeight) && toolbarHeight > 0 ? toolbarHeight : DEFAULT_VIEWS_NAV_OFFSET;
+
+  viewsContainer.style.setProperty(VIEWS_CONTAINER_NAV_OFFSET_VAR, `${offsetValue}px`);
+}
+
+function ensureToolbarObserver(editor, viewsContainer) {
+  if (!viewsContainer || typeof ResizeObserver === 'undefined') {
+    return;
+  }
+
+  const toolbarEl = resolveViewsToolbar(editor);
+  if (!toolbarEl) {
+    return;
+  }
+
+  const existingObserver = viewsContainer[NAV_OBSERVER_KEY];
+  if (existingObserver) {
+    existingObserver.disconnect();
+  }
+
+  const observer = new ResizeObserver(() => {
+    syncViewsContainerNavOffset(editor, viewsContainer);
+  });
+
+  observer.observe(toolbarEl);
+  viewsContainer[NAV_OBSERVER_KEY] = observer;
+}
+
 export function mountModuleLibraryPanel(editor) {
   const viewsContainer = resolveViewsContainer(editor);
   if (!viewsContainer) {
     return null;
   }
+  syncViewsContainerNavOffset(editor, viewsContainer);
+  ensureToolbarObserver(editor, viewsContainer);
   let panel = viewsContainer.querySelector(`#${PANEL_ID}`);
   if (!panel) {
     panel = buildPanelMarkup();
@@ -218,6 +273,7 @@ function showModuleLibrary(editor) {
     return;
   }
 
+  syncViewsContainerNavOffset(editor, viewsContainer);
   viewsContainer.classList.add(MODULE_LIBRARY_ACTIVE_CLASS);
   panel.removeAttribute('hidden');
   panel.setAttribute('aria-hidden', 'false');
@@ -236,6 +292,7 @@ function hideModuleLibrary(editor) {
     return;
   }
 
+  syncViewsContainerNavOffset(editor, viewsContainer);
   viewsContainer.classList.remove(MODULE_LIBRARY_ACTIVE_CLASS);
   restoreNonModuleViews(viewsContainer, panel);
 }
