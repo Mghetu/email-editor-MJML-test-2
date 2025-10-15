@@ -237,51 +237,83 @@ function hideModuleLibrary(editor) {
   restoreNonModuleViews(viewsContainer, panel);
 }
 
+function ensureModuleLibraryCommand(editor) {
+  const commands = editor?.Commands;
+  if (!commands || typeof commands.add !== 'function') {
+    return false;
+  }
+
+  const hasCommand =
+    (typeof commands.has === 'function' && commands.has(MODULE_LIBRARY_COMMAND_ID)) ||
+    (typeof commands.get === 'function' && commands.get(MODULE_LIBRARY_COMMAND_ID));
+
+  if (!hasCommand) {
+    commands.add(MODULE_LIBRARY_COMMAND_ID, {
+      run(ed) {
+        ensureModuleLibraryReady(ed);
+        showModuleLibrary(ed);
+      },
+      stop(ed) {
+        hideModuleLibrary(ed);
+      },
+    });
+  }
+
+  return true;
+}
+
+function ensureModuleLibraryButton(editor) {
+  const panels = editor?.Panels;
+  if (!panels || typeof panels.getButton !== 'function') {
+    return false;
+  }
+
+  const existingButton = panels.getButton('views', MODULE_LIBRARY_BUTTON_ID);
+  if (existingButton) {
+    return true;
+  }
+
+  const viewsPanel = typeof panels.getPanel === 'function' ? panels.getPanel('views') : null;
+  if (!viewsPanel) {
+    return false;
+  }
+
+  panels.addButton('views', {
+    id: MODULE_LIBRARY_BUTTON_ID,
+    className: 'module-library-button',
+    attributes: {
+      title: 'Module Library',
+    },
+    label: 'Modules',
+    command: MODULE_LIBRARY_COMMAND_ID,
+    togglable: true,
+  });
+
+  return true;
+}
+
 export function registerModuleLibraryView(editor) {
   if (!editor) {
     return;
   }
 
-  const commands = editor.Commands;
-  const canAddCommands = commands && typeof commands.add === 'function';
-  if (canAddCommands) {
-    const commandAlreadyRegistered =
-      (typeof commands.has === 'function' && commands.has(MODULE_LIBRARY_COMMAND_ID)) ||
-      (typeof commands.get === 'function' && commands.get(MODULE_LIBRARY_COMMAND_ID));
-
-    if (!commandAlreadyRegistered) {
-      commands.add(MODULE_LIBRARY_COMMAND_ID, {
-        run(ed) {
-          ensureModuleLibraryReady(ed);
-          showModuleLibrary(ed);
-        },
-        stop(ed) {
-          hideModuleLibrary(ed);
-        },
-      });
-    }
-  }
-
-  const panels = editor.Panels;
-  if (panels) {
-    const existingButton = panels.getButton('views', MODULE_LIBRARY_BUTTON_ID);
-    if (!existingButton) {
-      const viewsPanel = panels.getPanel('views');
-      if (viewsPanel) {
-        panels.addButton('views', {
-          id: MODULE_LIBRARY_BUTTON_ID,
-          className: 'module-library-button',
-          attributes: {
-            title: 'Module Library',
-          },
-          label: 'Modules',
-          command: MODULE_LIBRARY_COMMAND_ID,
-          togglable: true,
-        });
-      }
-    }
-  }
-
+  const commandRegistered = ensureModuleLibraryCommand(editor);
+  const buttonRegistered = ensureModuleLibraryButton(editor);
   ensureModuleLibraryReady(editor);
+
+  if (commandRegistered && buttonRegistered) {
+    return;
+  }
+
+  const onceLoad = typeof editor.once === 'function' ? editor.once.bind(editor) : null;
+  if (!onceLoad) {
+    return;
+  }
+
+  onceLoad('load', () => {
+    ensureModuleLibraryCommand(editor);
+    ensureModuleLibraryButton(editor);
+    ensureModuleLibraryReady(editor);
+  });
 }
 

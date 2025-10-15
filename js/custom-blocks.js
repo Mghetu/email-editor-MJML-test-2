@@ -15,7 +15,7 @@ export const ExampleModules = [
   </mj-column>
 </mj-section>
 `.trim(),
-    thumbnail: 'https://via.placeholder.com/140x90?text=Hero',
+    thumbnail: 'assets/thumbnails/hero-module.svg',
     metadata: {
       description: 'Pre-styled hero banner with button and supporting text.'
     }
@@ -43,7 +43,7 @@ export const ExampleModules = [
   </mj-column>
 </mj-section>
 `.trim(),
-    thumbnail: 'https://via.placeholder.com/140x90?text=Columns',
+    thumbnail: 'assets/thumbnails/feature-columns.svg',
     metadata: {
       description: 'Three-column feature summary with icons and supporting copy.'
     }
