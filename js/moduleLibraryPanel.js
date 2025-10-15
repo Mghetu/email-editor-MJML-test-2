@@ -4,6 +4,10 @@ import { insertModuleIntoCanvas } from './moduleManagerUI.js';
 const PANEL_ID = 'module-library-panel';
 const MARKETING_LIST_ID = 'marketing-templates-list';
 const MODULE_LIST_WRAPPER_ID = 'module-library-modules';
+const MODULE_LIBRARY_BUTTON_ID = 'open-module-library';
+const MODULE_LIBRARY_COMMAND_ID = 'show-module-library';
+const MODULE_LIBRARY_HIDDEN_ATTR = 'data-module-library-hidden';
+const MODULE_LIBRARY_PREV_DISPLAY_ATTR = 'data-module-library-prev-display';
 
 function buildPanelMarkup() {
   const panel = document.createElement('section');
@@ -54,24 +58,10 @@ export function mountModuleLibraryPanel(editor) {
   if (!viewsContainer) {
     return null;
   }
-  const redundantSelectors = [
-    '.gjs-blocks-c',
-    '.gjs-blocks-cs',
-    '.gjs-layers-c',
-    '.gjs-pages-c',
-    '.gjs-pn-pages',
-  ];
-
-  redundantSelectors.forEach((selector) => {
-    viewsContainer.querySelectorAll(selector).forEach((element) => {
-      element.remove();
-    });
-  });
-
   let panel = viewsContainer.querySelector(`#${PANEL_ID}`);
   if (!panel) {
     panel = buildPanelMarkup();
-    viewsContainer.prepend(panel);
+    viewsContainer.appendChild(panel);
   }
 
   return panel;
@@ -164,10 +154,133 @@ export function ensureModuleLibraryReady(editor) {
     return;
   }
 
+  if (!panel.hasAttribute('data-module-library-initialised')) {
+    panel.setAttribute('hidden', 'true');
+    panel.setAttribute('aria-hidden', 'true');
+    panel.setAttribute('data-module-library-initialised', 'true');
+  }
+
   const moduleListWrapper = panel.querySelector(`#${MODULE_LIST_WRAPPER_ID}`);
   if (moduleListWrapper) {
     moduleListWrapper.setAttribute('role', 'region');
     moduleListWrapper.setAttribute('aria-live', 'polite');
   }
+}
+
+function hideNonModuleViews(viewsContainer, panel) {
+  Array.from(viewsContainer.children).forEach((child) => {
+    if (child === panel) {
+      child.removeAttribute(MODULE_LIBRARY_HIDDEN_ATTR);
+      child.removeAttribute(MODULE_LIBRARY_PREV_DISPLAY_ATTR);
+      child.style.display = '';
+      return;
+    }
+
+    if (child.hasAttribute(MODULE_LIBRARY_HIDDEN_ATTR)) {
+      return;
+    }
+
+    const currentDisplay = child.style.display || '';
+    child.setAttribute(MODULE_LIBRARY_HIDDEN_ATTR, 'true');
+    child.setAttribute(MODULE_LIBRARY_PREV_DISPLAY_ATTR, currentDisplay);
+    child.setAttribute('aria-hidden', 'true');
+    child.style.display = 'none';
+  });
+}
+
+function restoreNonModuleViews(viewsContainer, panel) {
+  Array.from(viewsContainer.children).forEach((child) => {
+    if (child === panel) {
+      child.style.display = '';
+      child.setAttribute('hidden', 'true');
+      child.setAttribute('aria-hidden', 'true');
+      return;
+    }
+
+    if (!child.hasAttribute(MODULE_LIBRARY_HIDDEN_ATTR)) {
+      return;
+    }
+
+    const previousDisplay = child.getAttribute(MODULE_LIBRARY_PREV_DISPLAY_ATTR) || '';
+    child.style.display = previousDisplay;
+    child.removeAttribute(MODULE_LIBRARY_HIDDEN_ATTR);
+    child.removeAttribute(MODULE_LIBRARY_PREV_DISPLAY_ATTR);
+    child.removeAttribute('aria-hidden');
+  });
+}
+
+function showModuleLibrary(editor) {
+  const viewsContainer = resolveViewsContainer(editor);
+  const panel = mountModuleLibraryPanel(editor);
+
+  if (!viewsContainer || !panel) {
+    return;
+  }
+
+  panel.removeAttribute('hidden');
+  panel.setAttribute('aria-hidden', 'false');
+
+  hideNonModuleViews(viewsContainer, panel);
+}
+
+function hideModuleLibrary(editor) {
+  const viewsContainer = resolveViewsContainer(editor);
+  if (!viewsContainer) {
+    return;
+  }
+
+  const panel = viewsContainer.querySelector(`#${PANEL_ID}`);
+  if (!panel) {
+    return;
+  }
+
+  restoreNonModuleViews(viewsContainer, panel);
+}
+
+export function registerModuleLibraryView(editor) {
+  if (!editor) {
+    return;
+  }
+
+  const panels = editor.Panels;
+  if (!panels) {
+    return;
+  }
+
+  const viewsPanel = panels.getPanel('views');
+  if (!viewsPanel) {
+    return;
+  }
+
+  const existingButton = panels.getButton('views', MODULE_LIBRARY_BUTTON_ID);
+  if (!existingButton) {
+    panels.addButton('views', {
+      id: MODULE_LIBRARY_BUTTON_ID,
+      className: 'module-library-button',
+      attributes: {
+        title: 'Module Library',
+      },
+      label: 'Modules',
+      command: MODULE_LIBRARY_COMMAND_ID,
+      togglable: true,
+    });
+  }
+
+  const commands = editor.Commands;
+  const hasCommand =
+    commands && typeof commands.get === 'function' && commands.get(MODULE_LIBRARY_COMMAND_ID);
+  if (!hasCommand) {
+    commands.add(MODULE_LIBRARY_COMMAND_ID, {
+      run(ed) {
+        ensureModuleLibraryReady(ed);
+        showModuleLibrary(ed);
+      },
+      stop(ed) {
+        hideModuleLibrary(ed);
+      },
+    });
+  }
+
+  ensureModuleLibraryReady(editor);
 }
 

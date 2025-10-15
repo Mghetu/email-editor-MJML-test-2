@@ -239,6 +239,10 @@ body {
   box-shadow: 0 12px 32px rgba(15, 23, 42, 0.35);
 }
 
+.module-library-panel[hidden] {
+  display: none !important;
+}
+
 .module-library-panel__header {
   display: flex;
   flex-direction: column;
