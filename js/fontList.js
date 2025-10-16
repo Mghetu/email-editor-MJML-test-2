@@ -156,8 +156,28 @@ export function addAptosFont(editor) {
   } = getOptionsFromProperty(fontProperty);
   const aptosNormalised = normaliseFontValue(APTOS_FONT_VALUE);
 
+  const extractValue = (item) => {
+    if (typeof item === 'string') {
+      return item;
+    }
+
+    if (!item || typeof item !== 'object') {
+      return '';
+    }
+
+    const possibleKeys = ['value', 'id', 'name', 'label'];
+    for (const key of possibleKeys) {
+      const candidate = item[key];
+      if (typeof candidate === 'string' && candidate) {
+        return candidate;
+      }
+    }
+
+    return '';
+  };
+
   const hasAptos = existingList.some((item) => {
-    const value = typeof item === 'string' ? item : item?.value;
+    const value = extractValue(item);
     return normaliseFontValue(value) === aptosNormalised;
   });
 
@@ -166,9 +186,39 @@ export function addAptosFont(editor) {
   }
 
   const containsObjectEntries = existingList.some((item) => item && typeof item === 'object');
-  const aptosEntry = containsObjectEntries
-    ? { value: APTOS_FONT_VALUE, name: APTOS_FONT_LABEL }
-    : APTOS_FONT_VALUE;
+
+  const buildObjectEntry = () => {
+    const template = existingList.find((item) => item && typeof item === 'object');
+    const entry = {};
+
+    if (template && typeof template === 'object') {
+      const valueKey = ['value', 'id', 'name', 'label'].find(
+        (key) => key in template && typeof template[key] === 'string'
+      );
+      const labelKey = ['label', 'name'].find(
+        (key) => key in template && typeof template[key] === 'string'
+      );
+
+      const resolvedValueKey = valueKey || 'value';
+      entry[resolvedValueKey] = APTOS_FONT_VALUE;
+
+      const resolvedLabelKey = labelKey && labelKey !== resolvedValueKey ? labelKey : null;
+
+      if (resolvedLabelKey) {
+        entry[resolvedLabelKey] = APTOS_FONT_LABEL;
+      } else if (resolvedValueKey !== 'label') {
+        entry.label = APTOS_FONT_LABEL;
+      } else {
+        entry.name = APTOS_FONT_LABEL;
+      }
+
+      return entry;
+    }
+
+    return { value: APTOS_FONT_VALUE, label: APTOS_FONT_LABEL };
+  };
+
+  const aptosEntry = containsObjectEntries ? buildObjectEntry() : APTOS_FONT_VALUE;
 
   const updatedList = existingList.concat(aptosEntry);
 
