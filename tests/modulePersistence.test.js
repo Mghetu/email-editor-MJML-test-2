@@ -210,6 +210,18 @@ test('updateBlock increments version and prepends prior snapshots to history', a
   assert.strictEqual(afterFirstUpdate.history[0].version, 1);
   assert.strictEqual(afterFirstUpdate.history[0].markup, DEFAULT_MODULE.markup);
 
+  const storedAfterFirstUpdate = window.__getIndexedDbValue('mjmlModules');
+  assert.strictEqual(
+    storedAfterFirstUpdate[0].version,
+    2,
+    'indexedDB should record the incremented version'
+  );
+  assert.strictEqual(
+    storedAfterFirstUpdate[0].history[0].version,
+    1,
+    'indexedDB should persist history snapshots'
+  );
+
   const secondUpdate = await updateBlock({
     id: DEFAULT_MODULE.id,
     label: 'Updated Module Again',
@@ -222,6 +234,39 @@ test('updateBlock increments version and prepends prior snapshots to history', a
   assert.strictEqual(afterSecondUpdate.history.length, 2);
   assert.strictEqual(afterSecondUpdate.history[0].version, 2);
   assert.strictEqual(afterSecondUpdate.history[1].version, 1);
+
+  const storedAfterSecondUpdate = window.__getIndexedDbValue('mjmlModules');
+  assert.strictEqual(storedAfterSecondUpdate[0].version, 3);
+  assert.deepStrictEqual(
+    storedAfterSecondUpdate[0].history.map((entry) => entry.version),
+    [2, 1],
+    'history order should match persisted snapshots in indexedDB'
+  );
+});
+
+test('indexedDB exposes raw entries for analysis', async () => {
+  const win = window;
+  await saveBlock({ ...DEFAULT_MODULE });
+  await updateBlock({
+    id: DEFAULT_MODULE.id,
+    label: 'Another update',
+    markup: '<mjml>another</mjml>'
+  });
+
+  const entries = win.__getAllIndexedDbEntries();
+  assert.deepStrictEqual(entries, [
+    [
+      'mjmlModules',
+      [
+        {
+          ...win.__getIndexedDbValue('mjmlModules')[0]
+        }
+      ]
+    ]
+  ]);
+  assert.strictEqual(entries[0][0], 'mjmlModules');
+  assert.strictEqual(entries[0][1][0].id, DEFAULT_MODULE.id);
+  assert.ok(entries[0][1][0].updatedAt, 'raw entry should include updated timestamp');
 });
 
 test('persistModules writes modules to IndexedDB when available', async () => {
@@ -306,6 +351,26 @@ test('persistModules falls back to localStorage and broadcasts changes when Inde
   assert.ok(broadcastedModules, 'modules:changed event should be dispatched');
   assert.strictEqual(broadcastedModules[0].id, DEFAULT_MODULE.id);
   assert.strictEqual(modules[0].id, DEFAULT_MODULE.id);
+
+  const loadedViaFallback = await loadBlocks();
+  assert.strictEqual(
+    loadedViaFallback.length,
+    1,
+    'loadBlocks should analyse persisted fallback modules and return the saved module'
+  );
+  const [loadedModule] = loadedViaFallback;
+  assert.strictEqual(loadedModule.id, DEFAULT_MODULE.id);
+  assert.strictEqual(loadedModule.version, 1);
+  assert.deepStrictEqual(loadedModule.history, []);
+
+  const analysisSummary = loadedViaFallback.map((module) => ({
+    id: module.id,
+    version: module.version,
+    historyCount: Array.isArray(module.history) ? module.history.length : 0
+  }));
+  assert.deepStrictEqual(analysisSummary, [
+    { id: DEFAULT_MODULE.id, version: 1, historyCount: 0 }
+  ]);
 });
 
 test('deleteBlock throws when the module id does not exist', async () => {
