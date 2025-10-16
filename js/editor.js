@@ -12,14 +12,21 @@ let lastStoreToastAt = 0;
 const SAVE_BLOCK_BUTTON_ID = 'save-custom-block-btn';
 const DEFAULT_BLOCK_CATEGORY = 'Custom Modules';
 
-const slugify = (value = '') =>
-  value
-    .toString()
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)+/g, '')
-    .slice(0, 60) || 'custom-block';
+export const slugify = (value) => {
+  if (value === null || typeof value === 'undefined') {
+    return 'custom-block';
+  }
+
+  return (
+    value
+      .toString()
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '')
+      .slice(0, 60) || 'custom-block'
+  );
+};
 
 const showSaveBlockToast = (message, { variant = 'info', duration = 3500 } = {}) =>
   showToast({
@@ -45,7 +52,11 @@ const promptForValue = ({ message, defaultValue = '', required = false }) => {
   return { cancelled: false, value: trimmed };
 };
 
-const buildModuleDefinition = async (editor, markup) => {
+export const buildModuleDefinition = async (
+  editor,
+  markup,
+  { loadBlocks: loadBlocksFn = loadBlocks } = {}
+) => {
   const selected = editor.getSelected();
   const suggestedLabel =
     selected?.get('custom-name') ||
@@ -94,7 +105,7 @@ const buildModuleDefinition = async (editor, markup) => {
   let existingModule = null;
 
   try {
-    const modules = await loadBlocks();
+    const modules = await loadBlocksFn();
     existingModule = modules.find((module) => module.id === id) || null;
   } catch (error) {
     console.warn('[CustomBlocks] Unable to verify existing modules before saving', error);
