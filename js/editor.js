@@ -317,7 +317,6 @@ export function initEditor() {
   configureStorageEvents(window.editor);
   initialiseCustomBlocks(window.editor);
   setupSaveBlockButton(window.editor);
-  registerModuleLibraryView(window.editor);
 
   window.editor.on('load', function () {
     registerModuleLibraryView(window.editor);
