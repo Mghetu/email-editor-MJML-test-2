@@ -120,7 +120,15 @@ function createIndexedDbMock() {
     }
   };
 
-  return { indexedDB };
+  return {
+    indexedDB,
+    getValue(key) {
+      return dataStore.get(key);
+    },
+    getAllEntries() {
+      return Array.from(dataStore.entries());
+    }
+  };
 }
 
 function createWindowMock({ enableIndexedDb = true } = {}) {
@@ -135,7 +143,13 @@ function createWindowMock({ enableIndexedDb = true } = {}) {
   };
 
   if (enableIndexedDb) {
-    windowMock.indexedDB = createIndexedDbMock().indexedDB;
+    const indexedDbMock = createIndexedDbMock();
+    windowMock.indexedDB = indexedDbMock.indexedDB;
+    windowMock.__getIndexedDbValue = indexedDbMock.getValue;
+    windowMock.__getAllIndexedDbEntries = indexedDbMock.getAllEntries;
+  } else {
+    windowMock.__getIndexedDbValue = () => undefined;
+    windowMock.__getAllIndexedDbEntries = () => [];
   }
 
   return windowMock;
@@ -208,6 +222,31 @@ test('updateBlock increments version and prepends prior snapshots to history', a
   assert.strictEqual(afterSecondUpdate.history.length, 2);
   assert.strictEqual(afterSecondUpdate.history[0].version, 2);
   assert.strictEqual(afterSecondUpdate.history[1].version, 1);
+});
+
+test('persistModules writes modules to IndexedDB when available', async () => {
+  const win = window;
+  let broadcastedModules = null;
+  win.addEventListener(MODULES_CHANGED_EVENT, (event) => {
+    broadcastedModules = event.detail.modules;
+  });
+
+  await saveBlock({ ...DEFAULT_MODULE });
+
+  const storedModules = win.__getIndexedDbValue('mjmlModules');
+  assert.ok(Array.isArray(storedModules), 'modules should be stored in IndexedDB');
+  assert.strictEqual(storedModules.length, 1);
+  assert.strictEqual(storedModules[0].id, DEFAULT_MODULE.id);
+  assert.strictEqual(storedModules[0].version, 1);
+
+  assert.ok(Array.isArray(broadcastedModules), 'modules:changed should broadcast modules');
+  assert.strictEqual(broadcastedModules.length, 1);
+  assert.strictEqual(broadcastedModules[0].id, DEFAULT_MODULE.id);
+
+  const loadedModules = await loadBlocks();
+  assert.strictEqual(loadedModules.length, 1, 'loadBlocks should read from IndexedDB');
+  assert.strictEqual(loadedModules[0].id, DEFAULT_MODULE.id);
+  assert.strictEqual(loadedModules[0].version, 1);
 });
 
 test('saveBlock rejects invalid module definitions', async () => {
