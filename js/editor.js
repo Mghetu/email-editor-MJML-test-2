@@ -3,6 +3,7 @@ import { loadBlocks, saveBlock } from './modulePersistence.js';
 import { showToast } from './toast.js';
 import { initModuleManagerUI } from './moduleManagerUI.js';
 import { initMarketingTemplatesUI, registerModuleLibraryView } from './moduleLibraryPanel.js';
+import { addAptosFont } from './fontList.js';
 
 const STORAGE_TOAST_ID = 'storage-status-toast';
 const STORE_TOAST_INTERVAL = 15000;
@@ -316,7 +317,6 @@ export function initEditor() {
   configureStorageEvents(window.editor);
   initialiseCustomBlocks(window.editor);
   setupSaveBlockButton(window.editor);
-  registerModuleLibraryView(window.editor);
 
   window.editor.on('load', function () {
     registerModuleLibraryView(window.editor);
@@ -364,6 +364,9 @@ export function initEditor() {
         }
       });
     }
+
+    // Inject the Aptos font option after the MJML preset resets the Style Manager.
+    addAptosFont(window.editor);
   });
 }
 
