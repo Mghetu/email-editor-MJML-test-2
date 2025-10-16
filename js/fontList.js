@@ -99,6 +99,44 @@ function normaliseFontValue(value) {
   return typeof value === 'string' ? value.replace(/\s+/g, '').toLowerCase() : '';
 }
 
+function getOptionsFromProperty(fontProperty) {
+  if (!fontProperty) {
+    return { items: [], sourceKey: 'list', existingKeys: [] };
+  }
+
+  const keysToCheck = ['list', 'options', 'values'];
+  const existingKeys = [];
+
+  for (const key of keysToCheck) {
+    const value = fontProperty.get(key);
+    if (Array.isArray(value) && value.length) {
+      existingKeys.push(key);
+    }
+  }
+
+  const sourceKey = existingKeys[0] || 'list';
+  const sourceItems = Array.isArray(fontProperty.get(sourceKey))
+    ? [...fontProperty.get(sourceKey)]
+    : [];
+
+  return { items: sourceItems, sourceKey, existingKeys };
+}
+
+function setOptionsOnProperty(fontProperty, options, sourceKey, existingKeys) {
+  if (!fontProperty) {
+    return;
+  }
+
+  const keysToUpdate = new Set(existingKeys && existingKeys.length ? existingKeys : [sourceKey]);
+
+  // Always keep the `list` key in sync for backwards compatibility.
+  keysToUpdate.add('list');
+
+  for (const key of keysToUpdate) {
+    fontProperty.set(key, options);
+  }
+}
+
 export function addAptosFont(editor) {
   if (!editor || !editor.StyleManager) {
     return;
@@ -111,8 +149,11 @@ export function addAptosFont(editor) {
     return;
   }
 
-  const currentList = fontProperty.get('list');
-  const existingList = Array.isArray(currentList) ? [...currentList] : [];
+  const {
+    items: existingList,
+    sourceKey: optionsKey,
+    existingKeys,
+  } = getOptionsFromProperty(fontProperty);
   const aptosNormalised = normaliseFontValue(APTOS_FONT_VALUE);
 
   const hasAptos = existingList.some((item) => {
@@ -124,13 +165,15 @@ export function addAptosFont(editor) {
     return;
   }
 
-  const updatedList = existingList.concat({
-    value: APTOS_FONT_VALUE,
-    name: APTOS_FONT_LABEL,
-  });
+  const containsObjectEntries = existingList.some((item) => item && typeof item === 'object');
+  const aptosEntry = containsObjectEntries
+    ? { value: APTOS_FONT_VALUE, name: APTOS_FONT_LABEL }
+    : APTOS_FONT_VALUE;
+
+  const updatedList = existingList.concat(aptosEntry);
 
   // Updating the property triggers GrapesJS to refresh the select options on render.
-  fontProperty.set('list', updatedList);
+  setOptionsOnProperty(fontProperty, updatedList, optionsKey, existingKeys);
   if (typeof styleManager.render === 'function') {
     styleManager.render();
   }
