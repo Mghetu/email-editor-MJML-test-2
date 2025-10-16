@@ -150,7 +150,8 @@ function setWindow(options) {
 setWindow();
 
 const modulePersistenceModule = await import('../js/modulePersistence.js');
-const { saveBlock, updateBlock, deleteBlock, MODULES_CHANGED_EVENT } = modulePersistenceModule;
+const { saveBlock, updateBlock, deleteBlock, loadBlocks, MODULES_CHANGED_EVENT } =
+  modulePersistenceModule;
 
 const DEFAULT_MODULE = {
   id: 'module-1',
@@ -226,12 +227,31 @@ test('saveBlock rejects invalid module definitions', async () => {
   );
 });
 
-test('persistModules falls back to localStorage and broadcasts changes when IndexedDB is unavailable', async () => {
-  const win = setWindow({ enableIndexedDb: false });
+test('persistModules falls back to localStorage and broadcasts changes when IndexedDB writes fail', async () => {
+  const win = setWindow();
   let broadcastedModules = null;
   win.addEventListener(MODULES_CHANGED_EVENT, (event) => {
     broadcastedModules = event.detail.modules;
   });
+
+  const simulatedFailure = new Error('Simulated IndexedDB failure');
+  win.indexedDB.open = () => {
+    const request = {
+      result: undefined,
+      error: simulatedFailure,
+      onsuccess: null,
+      onerror: null,
+      onupgradeneeded: null
+    };
+
+    queueMicrotask(() => {
+      if (typeof request.onerror === 'function') {
+        request.onerror({ target: { error: simulatedFailure } });
+      }
+    });
+
+    return request;
+  };
 
   const modules = await saveBlock({ ...DEFAULT_MODULE });
 
@@ -254,4 +274,22 @@ test('deleteBlock throws when the module id does not exist', async () => {
     deleteBlock('non-existent'),
     /Module not found./
   );
+});
+
+test('updateBlock rejects invalid module definitions', async () => {
+  await saveBlock({ ...DEFAULT_MODULE });
+
+  await assert.rejects(
+    updateBlock({ id: DEFAULT_MODULE.id, label: '', markup: '<mjml></mjml>' }),
+    /Module definitions require id, label, and markup./
+  );
+
+  await assert.rejects(
+    updateBlock({ id: DEFAULT_MODULE.id, label: 'Still valid', markup: '' }),
+    /Module definitions require id, label, and markup./
+  );
+
+  const [storedModule] = await loadBlocks();
+  assert.strictEqual(storedModule.version, 1, 'failed updates should not mutate modules');
+  assert.strictEqual(storedModule.label, DEFAULT_MODULE.label);
 });
