@@ -4,6 +4,11 @@ body {
   margin: 0;
 }
 
+:root {
+  /* Height of the view-switch toolbar plus desired spacing */
+  --gjs-views-toolbar-offset: 56px;
+}
+
 #gjs,
 .gjs-editor {
   height: 100%;
@@ -225,6 +230,17 @@ body {
 .gjs-pn-panel.gjs-pn-views-container > *:not(.module-library-panel) {
   flex: 1 1 auto;
   min-height: 0;
+}
+
+.gjs-pn-panel.gjs-pn-views-container .gjs-sm-sectors,
+.gjs-pn-panel.gjs-pn-views-container .gjs-sm-header,
+.gjs-pn-panel.gjs-pn-views-container .module-library-panel {
+  margin-top: var(--gjs-views-toolbar-offset);
+}
+
+.gjs-pn-panel.gjs-pn-views-container .gjs-traits-label,
+.gjs-pn-panel.gjs-pn-views-container .gjs-traits-cs {
+  margin-top: 0;
 }
 
 .module-library-panel {
